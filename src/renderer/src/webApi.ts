@@ -236,6 +236,8 @@ if (!window.api) {
       set: (key: string, value: string) => rpc('settings:set', key, value),
       testAzure: (url: string, username: string, password: string, libraryId: string) =>
         rpc('settings:test-azure', url, username, password, libraryId),
+      listAzureLibraries: (url: string, username: string, password: string) =>
+        rpc('settings:list-azure-libraries', url, username, password),
       restartServer: () => rpc('settings:restart-server'),
       getMobileConnectionInfo: () => rpc('settings:get-mobile-connection-info'),
     },

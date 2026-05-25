@@ -14,6 +14,7 @@ import { AbsLibraryItem, decideAbsMatches } from './absSync'
 import {
   AzureConfig,
   azureFetchLibraryItems,
+  azureListLibraries,
   azureTestConnection,
   azureTriggerScan,
   describeAzureError,
@@ -962,6 +963,17 @@ function createWindow(): void {
       } catch (err: any) {
         const errorMsg = describeAzureError(err, 'test')
         return { success: false, error: errorMsg }
+      }
+    },
+  )
+
+  handleIpc(
+    'settings:list-azure-libraries',
+    async (_event, url: string, username: string, password: string) => {
+      try {
+        return { success: true, libraries: await azureListLibraries(url, username, password) }
+      } catch (err: any) {
+        return { success: false, error: describeAzureError(err, 'test') }
       }
     },
   )

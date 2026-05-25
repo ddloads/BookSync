@@ -7,6 +7,9 @@ import { CompanionAppTab } from './CompanionAppTab'
 export function SettingsTab() {
   const [subTab, setSubTab] = useState<'accounts' | 'general' | 'integrations' | 'mobile' | 'logs'>('accounts')
   const isWebRuntime = !navigator.userAgent.toLowerCase().includes('electron')
+  const [azureLibraries, setAzureLibraries] = useState<Array<{ id: string; name: string; description?: string | null; books?: number; sources?: number }>>([])
+  const [azureLibrariesLoading, setAzureLibrariesLoading] = useState(false)
+  const [azureLibrariesError, setAzureLibrariesError] = useState<string | null>(null)
   
   const nasPath = useLibraryStore(s => s.nasPath)
   const setNasPath = useLibraryStore(s => s.setNasPath)
@@ -70,6 +73,25 @@ export function SettingsTab() {
     flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all
     ${active ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'bg-white/[0.03] text-slate-400 hover:bg-white/[0.08] hover:text-white border border-white/[0.05]'}
   `
+
+  const handleFetchAzureLibraries = async () => {
+    setAzureLibrariesLoading(true)
+    setAzureLibrariesError(null)
+    try {
+      const result = await window.api.settings.listAzureLibraries(azureUrl, azureUsername, azurePassword)
+      if (!result.success) {
+        setAzureLibraries([])
+        setAzureLibrariesError(result.error || 'Failed to load Azure libraries')
+        return
+      }
+      setAzureLibraries(result.libraries || [])
+    } catch (err: any) {
+      setAzureLibraries([])
+      setAzureLibrariesError(String(err?.message ?? err ?? 'Failed to load Azure libraries'))
+    } finally {
+      setAzureLibrariesLoading(false)
+    }
+  }
 
   return (
     <div className="p-4 md:p-8 lg:p-10 max-w-5xl h-full flex flex-col">
@@ -379,17 +401,64 @@ export function SettingsTab() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
-                <button
-                  onClick={testAzureConnection}
-                  className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/10 font-black text-[10px] uppercase tracking-widest py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
-                >
+                <div className="flex gap-4">
+                  <button
+                    onClick={handleFetchAzureLibraries}
+                    disabled={!azureUrl || !azureUsername || !azurePassword || azureLibrariesLoading}
+                    className="flex-1 bg-blue-500/10 hover:bg-blue-500/20 disabled:opacity-40 disabled:hover:bg-blue-500/10 text-blue-400 border border-blue-500/10 font-black text-[10px] uppercase tracking-widest py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
+                  >
+                    <Library size={14} className={azureLibrariesLoading ? 'animate-pulse' : 'group-hover:scale-110 transition-transform'} />
+                    {azureLibrariesLoading ? 'Checking Azure...' : 'Show Available Libraries'}
+                  </button>
+                  <button
+                    onClick={testAzureConnection}
+                    className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/10 font-black text-[10px] uppercase tracking-widest py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group"
+                  >
                   <Activity size={14} className="group-hover:scale-110 transition-transform" />
                   Test Azure Connection
-                </button>
-              </div>
+                  </button>
+                </div>
 
-              <button
+                {(azureLibrariesError || azureLibraries.length > 0) && (
+                  <div className="space-y-3 rounded-2xl border border-slate-800/60 bg-black/20 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Available Azure Libraries</h4>
+                      {azureLibraries.length > 0 && (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">
+                          {azureLibraries.length} found
+                        </span>
+                      )}
+                    </div>
+                    {azureLibrariesError ? (
+                      <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-xs font-bold text-rose-300">
+                        {azureLibrariesError}
+                      </div>
+                    ) : (
+                      <div className="grid gap-3">
+                        {azureLibraries.map(library => (
+                          <div key={library.id} className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                            <div className="min-w-0">
+                              <div className="text-sm font-black text-white">{library.name}</div>
+                              <div className="mt-1 break-all font-mono text-[11px] text-slate-500">{library.id}</div>
+                              <div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-600">
+                                {library.books ?? 0} books · {library.sources ?? 0} sources
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setAzureLibraryId(library.id)}
+                              className="shrink-0 rounded-xl bg-amber-500 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-black transition-all hover:bg-amber-400 active:scale-95"
+                            >
+                              Use This ID
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <button
                 onClick={saveSettings}
                 className="w-full bg-white text-black hover:bg-amber-400 font-black text-[10px] uppercase tracking-[0.2em] py-5 px-6 rounded-2xl transition-all duration-500 shadow-xl active:scale-95"
               >

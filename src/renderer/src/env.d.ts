@@ -48,6 +48,11 @@ export interface IElectronAPI {
     get: (key: string, defaultValue: string) => Promise<string>
     set: (key: string, value: string) => Promise<boolean>
     testAzure: (url: string, username: string, password: string, libraryId: string) => Promise<{ success: boolean; libraryName?: string; error?: string }>
+    listAzureLibraries: (url: string, username: string, password: string) => Promise<{
+      success: boolean
+      libraries?: Array<{ id: string; name: string; description?: string | null; books?: number; sources?: number }>
+      error?: string
+    }>
     restartServer: () => Promise<boolean>
     getMobileConnectionInfo: () => Promise<{
       enabled: boolean

@@ -77,6 +77,8 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.invoke('settings:set', key, value),
     testAzure: (url: string, username: string, password: string, libraryId: string) =>
       ipcRenderer.invoke('settings:test-azure', url, username, password, libraryId),
+    listAzureLibraries: (url: string, username: string, password: string) =>
+      ipcRenderer.invoke('settings:list-azure-libraries', url, username, password),
     restartServer: () => ipcRenderer.invoke('settings:restart-server'),
     getMobileConnectionInfo: () => ipcRenderer.invoke('settings:get-mobile-connection-info')
   },

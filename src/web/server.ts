@@ -14,6 +14,7 @@ import { AbsLibraryItem, decideAbsMatches } from '../main/absSync'
 import {
   AzureConfig,
   azureFetchLibraryItems,
+  azureListLibraries,
   azureTestConnection,
   azureTriggerScan,
   describeAzureError,
@@ -452,6 +453,13 @@ const rpcHandlers: Record<string, (...args: any[]) => any> = {
       const libraryName = await azureTestConnection({ url, username, password, libraryId })
       dbService.setSetting('azureToken', '')
       return { success: true, libraryName }
+    } catch (err) {
+      return { success: false, error: describeAzureError(err, 'test') }
+    }
+  },
+  'settings:list-azure-libraries': async (url: string, username: string, password: string) => {
+    try {
+      return { success: true, libraries: await azureListLibraries(url, username, password) }
     } catch (err) {
       return { success: false, error: describeAzureError(err, 'test') }
     }

@@ -182,6 +182,30 @@ export const azureTestConnection = async (config: AzureConfig): Promise<string> 
   return match.name
 }
 
+export const azureListLibraries = async (
+  url: string,
+  username: string,
+  password: string,
+): Promise<Array<{ id: string; name: string; description?: string | null; books?: number; sources?: number }>> => {
+  const baseUrl = stripTrailingSlash(url)
+  const token = await azureLogin(url, username, password)
+  const res = await axios.get(`${baseUrl}/api/library/libraries`, {
+    headers: { Authorization: `Bearer ${token}` },
+    timeout: 15000,
+  })
+  const libraries: any[] = Array.isArray(res.data)
+    ? res.data
+    : (res.data?.libraries ?? [])
+
+  return libraries.map((library) => ({
+    id: String(library.id),
+    name: String(library.name ?? 'Unnamed Library'),
+    description: library.description ?? null,
+    books: typeof library._count?.books === 'number' ? library._count.books : undefined,
+    sources: typeof library._count?.sources === 'number' ? library._count.sources : undefined,
+  }))
+}
+
 /** Turn an axios/Azure error into a user-readable string. */
 export const describeAzureError = (err: unknown, context: 'scan' | 'test' | 'trigger'): string => {
   if (!isAxiosError(err)) {
