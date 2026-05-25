@@ -12,7 +12,7 @@ services:
       - PORT=3005
     volumes:
       - ./config:/config
-      - /path/to/your/audiobooks:/downloads
+      - ${DOWNLOADS_PATH:-./downloads}:/downloads
     ports:
       - 3000:3000 # Webtop HTTP
       - 3001:3001 # Webtop HTTPS
