@@ -15,16 +15,15 @@ RUN npm run build
 FROM ghcr.io/linuxserver/webtop:ubuntu-mate
 
 # Install system dependencies
-# - Python 3 for the audible wrapper
-# - FFmpeg for conversions
-RUN apt-get update && apt-get install -y \
-    nodejs \
-    npm \
+# We only need Python and FFmpeg. Electron is bundled in node_modules.
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
     ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -49,7 +48,7 @@ ENV NODE_ENV=production
 # We'll add a startup script to the desktop to launch BookSync.
 RUN mkdir -p /etc/services.d/booksync
 RUN echo "#!/usr/bin/with-contenv bash\n\
-exec s6-setuidgid abc /usr/bin/node /app/node_modules/.bin/electron /app/out/main/index.js --no-sandbox" > /etc/services.d/booksync/run
+exec s6-setuidgid abc /app/node_modules/.bin/electron /app/out/main/index.js --no-sandbox" > /etc/services.d/booksync/run
 RUN chmod +x /etc/services.d/booksync/run
 
 # Expose Webtop ports (3000 for HTTP, 3001 for HTTPS)
