@@ -136,7 +136,7 @@ export class DatabaseService {
 
   // One-time migration: import db.json from userData if it exists
   private migrateFromJson() {
-    const jsonPath = path.join(app.getPath('userData'), 'db.json');
+    const jsonPath = path.join(getUserDataPath(), 'db.json');
     if (!fs.existsSync(jsonPath)) return;
 
     const booksCount = (this.db.prepare('SELECT COUNT(*) as n FROM books').get() as { n: number }).n;
