@@ -161,6 +161,41 @@ export const azureTriggerScan = async (
 }
 
 /**
+ * Ask Azure to rescan a specific folder rather than the entire library.
+ * `relativePath` is the folder path relative to BookSync's NAS root —
+ * Azure resolves it against its library's first enabled source. Falls
+ * back to the full-library trigger if the folder-scan endpoint isn't
+ * present on the server (older Azure deployments).
+ */
+export const azureTriggerFolderScan = async (
+  dbService: DatabaseService,
+  config: AzureConfig,
+  relativePath: string,
+): Promise<void> => {
+  const baseUrl = stripTrailingSlash(config.url)
+  await withAzureAuth(dbService, config, async (token) => {
+    try {
+      await axios.post(
+        `${baseUrl}/api/admin/libraries/${encodeURIComponent(config.libraryId)}/scan-folder`,
+        { relativePath, trigger: 'booksync' },
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 },
+      )
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.status === 404) {
+        // Older Azure server without the folder-scan endpoint — fall back.
+        await axios.post(
+          `${baseUrl}/api/admin/libraries/${encodeURIComponent(config.libraryId)}/scan`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 },
+        )
+        return
+      }
+      throw err
+    }
+  })
+}
+
+/**
  * Verifies that the configured Azure server is reachable, the credentials
  * work, and the configured libraryId exists. Returns the library name on
  * success.
@@ -207,7 +242,7 @@ export const azureListLibraries = async (
 }
 
 /** Turn an axios/Azure error into a user-readable string. */
-export const describeAzureError = (err: unknown, context: 'scan' | 'test' | 'trigger'): string => {
+export const describeAzureError = (err: unknown, context: string): string => {
   if (!isAxiosError(err)) {
     const fallback = err instanceof Error ? err.message : String(err)
     return fallback || `Azure ${context} failed with an unknown error.`

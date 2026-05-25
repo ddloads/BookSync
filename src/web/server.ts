@@ -18,6 +18,7 @@ import {
   azureListLibraries,
   azureTestConnection,
   azureTriggerScan,
+  azureTriggerFolderScan,
   describeAzureError,
 } from '../main/azureSync'
 import type { Book } from '../main/types'
@@ -40,6 +41,9 @@ let companionQueueSnapshot: {
 } = { queuePaused: false, items: [] }
 let pendingAzureScanConfig: AzureConfig | null = null
 let azureScanTimer: ReturnType<typeof setTimeout> | null = null
+// Folders touched by completed downloads — we batch these so multiple
+// downloads in the same folder collapse to one Azure folder-scan request.
+const pendingAzureScanFolders = new Set<string>()
 
 const app = express()
 const server = createServer(app)
@@ -356,7 +360,11 @@ async function downloadBookAction(bookId: string) {
     appLog('success', 'Download Complete', `"${book.title}" has been successfully exported to your NAS.`)
     broadcast('library:updated', { source: 'download', bookId: book.id })
     const azureConfig = getAzureConfig()
-    if (azureConfig) scheduleAzureScanAfterDownloads(azureConfig)
+    if (azureConfig) {
+      const relativeFolder = computeAzureRelativeFolder(finalPath)
+      if (relativeFolder) pendingAzureScanFolders.add(relativeFolder)
+      scheduleAzureScanAfterDownloads(azureConfig)
+    }
   } catch (err: any) {
     if (isCancellationError(err)) {
       appLog('info', 'Download Cancelled', `"${book.title}" was cancelled.`)
@@ -402,6 +410,19 @@ function scheduleAzureScanAfterDownloads(config: AzureConfig) {
   maybeTriggerPendingAzureScan()
 }
 
+function computeAzureRelativeFolder(absoluteFilePath: string): string | null {
+  try {
+    const nasRoot = getNasPath()
+    if (!nasRoot || !absoluteFilePath) return null
+    const folder = path.dirname(absoluteFilePath)
+    const rel = path.relative(nasRoot, folder).replace(/\\/g, '/')
+    if (!rel || rel.startsWith('..')) return null
+    return rel
+  } catch {
+    return null
+  }
+}
+
 function maybeTriggerPendingAzureScan() {
   if (!pendingAzureScanConfig || activeDownloads.size > 0) return
   const config = pendingAzureScanConfig
@@ -409,7 +430,21 @@ function maybeTriggerPendingAzureScan() {
   if (azureScanTimer) clearTimeout(azureScanTimer)
   azureScanTimer = setTimeout(() => {
     azureScanTimer = null
-    azureTriggerScan(dbService, config).catch((err) => appLog('error', 'Azure Scan', describeAzureError(err, 'trigger')))
+    const folders = Array.from(pendingAzureScanFolders)
+    pendingAzureScanFolders.clear()
+
+    if (folders.length === 0) {
+      // No folder info captured — fall back to a library scan so we don't
+      // silently drop a needed refresh on older code paths.
+      azureTriggerScan(dbService, config).catch((err) => appLog('error', 'Azure Scan', describeAzureError(err, 'trigger')))
+      return
+    }
+
+    for (const relativePath of folders) {
+      azureTriggerFolderScan(dbService, config, relativePath).catch((err) =>
+        appLog('error', 'Azure Scan', describeAzureError(err, `folder scan (${relativePath})`)),
+      )
+    }
   }, AZURE_SCAN_DEBOUNCE_MS)
 }
 
