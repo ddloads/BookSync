@@ -6,6 +6,7 @@ import { CompanionAppTab } from './CompanionAppTab'
 
 export function SettingsTab() {
   const [subTab, setSubTab] = useState<'accounts' | 'general' | 'integrations' | 'mobile' | 'logs'>('accounts')
+  const isWebRuntime = !navigator.userAgent.toLowerCase().includes('electron')
   
   const nasPath = useLibraryStore(s => s.nasPath)
   const setNasPath = useLibraryStore(s => s.setNasPath)
@@ -192,12 +193,17 @@ export function SettingsTab() {
                     type="text"
                     value={nasPath}
                     onChange={e => setNasPath(e.target.value)}
-                    placeholder="e.g. \\SERVER\Media\Audiobooks"
+                    placeholder={isWebRuntime ? "/downloads" : "e.g. \\\\SERVER\\Media\\Audiobooks"}
                     className="w-full bg-black/20 border border-slate-800/80 rounded-2xl pl-14 pr-6 py-4 text-sm text-white placeholder-slate-700 focus:outline-none focus:border-amber-500/40 transition-all"
                   />
                 </div>
                 <p className="text-[11px] text-slate-600 font-bold ml-1">
-                  Audiobooks are organized into folders: <span className="text-slate-500">Author/Series/Title (Year) [ASIN].m4b</span>
+                  {isWebRuntime
+                    ? 'In Docker, use the container path mapped to your audiobook storage, usually '
+                    : 'Audiobooks are organized into folders: '}
+                  <span className="text-slate-500">
+                    {isWebRuntime ? '/downloads' : 'Author/Series/Title (Year) [ASIN].m4b'}
+                  </span>
                 </p>
               </div>
 
@@ -273,35 +279,37 @@ export function SettingsTab() {
                 </div>
               </div>
 
-              <div className="space-y-4 pt-4 border-t border-slate-800/40">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Window Close Behavior</h4>
-                </div>
+              {!isWebRuntime && (
+                <div className="space-y-4 pt-4 border-t border-slate-800/40">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Window Close Behavior</h4>
+                  </div>
 
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">When Closing The Window</label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {[
-                      { id: 'exit', label: 'Quit App', desc: 'Close BookSync completely when the window is closed.' },
-                      { id: 'tray', label: 'Minimize To Tray', desc: 'Hide BookSync near the clock and keep it running in the background.' }
-                    ].map(option => (
-                      <button
-                        key={option.id}
-                        onClick={() => setCloseBehavior(option.id as 'exit' | 'tray')}
-                        className={`p-4 rounded-2xl border text-left transition-all ${
-                          closeBehavior === option.id
-                            ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 shadow-lg shadow-emerald-500/5'
-                            : 'bg-black/20 border-slate-800/80 text-slate-500 hover:border-slate-700'
-                        }`}
-                      >
-                        <div className="text-xs font-black uppercase tracking-tight mb-1">{option.label}</div>
-                        <div className="text-[10px] font-bold opacity-60 leading-relaxed">{option.desc}</div>
-                      </button>
-                    ))}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">When Closing The Window</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        { id: 'exit', label: 'Quit App', desc: 'Close BookSync completely when the window is closed.' },
+                        { id: 'tray', label: 'Minimize To Tray', desc: 'Hide BookSync near the clock and keep it running in the background.' }
+                      ].map(option => (
+                        <button
+                          key={option.id}
+                          onClick={() => setCloseBehavior(option.id as 'exit' | 'tray')}
+                          className={`p-4 rounded-2xl border text-left transition-all ${
+                            closeBehavior === option.id
+                              ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 shadow-lg shadow-emerald-500/5'
+                              : 'bg-black/20 border-slate-800/80 text-slate-500 hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="text-xs font-black uppercase tracking-tight mb-1">{option.label}</div>
+                          <div className="text-[10px] font-bold opacity-60 leading-relaxed">{option.desc}</div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <button
                 onClick={saveSettings}
