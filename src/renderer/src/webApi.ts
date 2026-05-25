@@ -29,6 +29,124 @@ async function rpc<T>(channel: string, ...args: any[]): Promise<T> {
   return payload.data as T
 }
 
+function waitForAudibleRedirect(oauthUrl: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div')
+    overlay.style.position = 'fixed'
+    overlay.style.inset = '0'
+    overlay.style.zIndex = '99999'
+    overlay.style.background = 'rgba(2, 6, 23, 0.82)'
+    overlay.style.backdropFilter = 'blur(8px)'
+    overlay.style.display = 'flex'
+    overlay.style.alignItems = 'center'
+    overlay.style.justifyContent = 'center'
+    overlay.style.padding = '24px'
+
+    const panel = document.createElement('div')
+    panel.style.width = 'min(560px, 100%)'
+    panel.style.background = '#0f172a'
+    panel.style.border = '1px solid rgba(148, 163, 184, 0.25)'
+    panel.style.borderRadius = '16px'
+    panel.style.boxShadow = '0 24px 80px rgba(0, 0, 0, 0.45)'
+    panel.style.padding = '24px'
+    panel.style.color = '#e2e8f0'
+    panel.style.fontFamily = 'Inter, ui-sans-serif, system-ui, sans-serif'
+
+    const title = document.createElement('h2')
+    title.textContent = 'Finish Audible Login'
+    title.style.margin = '0 0 10px'
+    title.style.fontSize = '22px'
+    title.style.fontWeight = '800'
+
+    const body = document.createElement('p')
+    body.textContent = 'Complete the Audible sign-in tab, copy the final page URL from the browser address bar, then paste it here.'
+    body.style.margin = '0 0 18px'
+    body.style.color = '#94a3b8'
+    body.style.lineHeight = '1.5'
+
+    const loginLink = document.createElement('a')
+    loginLink.href = oauthUrl
+    loginLink.target = '_blank'
+    loginLink.rel = 'noopener noreferrer'
+    loginLink.textContent = 'Open Audible login'
+    loginLink.style.display = 'inline-flex'
+    loginLink.style.marginBottom = '16px'
+    loginLink.style.color = '#f59e0b'
+    loginLink.style.fontWeight = '700'
+
+    const input = document.createElement('textarea')
+    input.placeholder = 'Paste the final Audible/Amazon URL here'
+    input.rows = 4
+    input.style.width = '100%'
+    input.style.boxSizing = 'border-box'
+    input.style.resize = 'vertical'
+    input.style.border = '1px solid rgba(148, 163, 184, 0.3)'
+    input.style.borderRadius = '12px'
+    input.style.background = '#020617'
+    input.style.color = '#e2e8f0'
+    input.style.padding = '12px'
+    input.style.outline = 'none'
+
+    const error = document.createElement('div')
+    error.style.minHeight = '22px'
+    error.style.marginTop = '8px'
+    error.style.color = '#f87171'
+    error.style.fontSize = '13px'
+
+    const actions = document.createElement('div')
+    actions.style.display = 'flex'
+    actions.style.justifyContent = 'flex-end'
+    actions.style.gap = '10px'
+    actions.style.marginTop = '16px'
+
+    const cancel = document.createElement('button')
+    cancel.type = 'button'
+    cancel.textContent = 'Cancel'
+    cancel.style.border = '1px solid rgba(148, 163, 184, 0.3)'
+    cancel.style.borderRadius = '10px'
+    cancel.style.background = 'transparent'
+    cancel.style.color = '#cbd5e1'
+    cancel.style.padding = '10px 14px'
+    cancel.style.cursor = 'pointer'
+
+    const submit = document.createElement('button')
+    submit.type = 'button'
+    submit.textContent = 'Connect Account'
+    submit.style.border = '0'
+    submit.style.borderRadius = '10px'
+    submit.style.background = '#f59e0b'
+    submit.style.color = '#020617'
+    submit.style.padding = '10px 14px'
+    submit.style.fontWeight = '800'
+    submit.style.cursor = 'pointer'
+
+    const cleanup = (value: string | null) => {
+      overlay.remove()
+      resolve(value)
+    }
+
+    submit.onclick = () => {
+      const value = input.value.trim()
+      if (!value) {
+        error.textContent = 'Paste the final URL before connecting.'
+        return
+      }
+      if (!value.includes('openid.oa2.authorization_code=')) {
+        error.textContent = 'That URL does not contain the Audible authorization code yet.'
+        return
+      }
+      cleanup(value)
+    }
+    cancel.onclick = () => cleanup(null)
+
+    actions.append(cancel, submit)
+    panel.append(title, body, loginLink, input, error, actions)
+    overlay.append(panel)
+    document.body.append(overlay)
+    input.focus()
+  })
+}
+
 function connectEvents() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   const ws = new WebSocket(`${protocol}//${window.location.host}/api/events`)
@@ -56,7 +174,7 @@ async function webLogin(region: string = 'us') {
   if (!startRes.ok) return { success: false, error: loginStart.error || 'Failed to start login.' }
 
   window.open(loginStart.oauth_url, '_blank', 'noopener,noreferrer')
-  const responseUrl = window.prompt('Complete the Audible login in the opened tab, then paste the final redirected URL here.')
+  const responseUrl = await waitForAudibleRedirect(loginStart.oauth_url)
   if (!responseUrl) return { success: false, cancelled: true }
 
   const registerRes = await fetch('/api/auth/register', {
