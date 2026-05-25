@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, BookOpen, ChevronLeft, ChevronRight, Cloud, Download, Library, RefreshCw, Settings } from 'lucide-react'
+import { Bell, BookOpen, ChevronLeft, ChevronRight, Cloud, Download, HardDrive, Library, RefreshCw, Settings } from 'lucide-react'
 import { useLibraryStore } from '../stores/useLibraryStore'
 import { useNotificationStore } from '../stores/useNotificationStore'
 
@@ -11,6 +11,7 @@ export function Sidebar() {
   const isSyncing = useLibraryStore(s => s.isSyncing)
   const isScanning = useLibraryStore(s => s.isScanning)
   const handleSync = useLibraryStore(s => s.handleSync)
+  const handleScanNas = useLibraryStore(s => s.handleScanNas)
   const handleScanAzure = useLibraryStore(s => s.handleScanAzure)
   const enrichProgress = useLibraryStore(s => s.enrichProgress)
   const queue = useLibraryStore(s => s.queue)
@@ -132,6 +133,16 @@ export function Sidebar() {
         >
           <Cloud size={16} className={isScanning ? 'animate-pulse' : ''} />
           <span className={collapsed ? 'hidden' : 'hidden lg:block'}>SYNC AZURE</span>
+        </button>
+
+        <button
+          onClick={handleScanNas}
+          disabled={isScanning}
+          title="Sync NAS"
+          className="w-full bg-emerald-500/10 hover:bg-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-emerald-400 text-[13px] font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all duration-300 border border-emerald-500/10 active:scale-95"
+        >
+          <HardDrive size={16} className={isScanning ? 'animate-pulse' : ''} />
+          <span className={collapsed ? 'hidden' : 'hidden lg:block'}>SYNC NAS</span>
         </button>
 
         {enrichProgress && (
