@@ -231,6 +231,8 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
       if (allDetails && Object.keys(allDetails).length > 0) set(s => ({ detailsCache: { ...s.detailsCache, ...allDetails } }))
       logClient('success', 'UI Library', `Loaded ${data.length} books`)
 
+      // --- IPC Listeners ---
+
       // Listen for remote download triggers
       window.api.book.onDownloadRemote((bookId: string) => {
         const book = get().books.find(b => b.id === bookId);
@@ -240,6 +242,40 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
       window.api.book.onDownloadManyRemote((bookIds: string[]) => {
         get().addManyToQueue(bookIds);
       });
+
+      // Download progress
+      window.api.book.onDownloadProgress((data) => {
+        get().setDownloadPhase(data.bookId, data.phase);
+        get().setDownloadProgress(data.bookId, data.progress, data.speed);
+      });
+
+      // Library sync progress
+      window.api.library.onSyncProgress((data) => {
+        set({ syncProgress: data });
+      });
+
+      // NAS scan progress
+      window.api.library.onScanProgress((data) => {
+        set({ scanProgress: data });
+      });
+
+      // Metadata enrichment
+      window.api.library.onEnrichProgress((data) => {
+        set({ enrichProgress: { completed: data.completed, total: data.total } });
+        if (data.details) {
+          get().setDetailsCache(data.bookId, data.details);
+        }
+      });
+
+      window.api.library.onEnrichComplete(() => {
+        set({ enrichProgress: null });
+      });
+
+      // Remote data changes
+      window.api.library.onRemoteChanged(() => {
+        get().loadLibrary();
+      });
+
     } catch { /* empty on first launch */ }
   },
 
