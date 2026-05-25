@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   BookOpen, CheckCircle2, Clock, Copy, Download, ExternalLink, Eye, EyeOff, HardDrive, PlayCircle, RefreshCw, X
 } from 'lucide-react'
@@ -37,6 +37,8 @@ function normalizedContributorKey(value: string | null | undefined): string {
 export function BookDetailPanel() {
   const book = useLibraryStore(s => s.selectedBook)!
   const isWebRuntime = !navigator.userAgent.toLowerCase().includes('electron')
+  const [audioDiagnostics, setAudioDiagnostics] = useState<any>(null)
+  const [audioDiagnosticsLoading, setAudioDiagnosticsLoading] = useState(false)
   const books = useLibraryStore(s => s.books)
   const detailsCache = useLibraryStore(s => s.detailsCache)
   const detailsLoading = useLibraryStore(s => s.detailsLoading)
@@ -92,6 +94,19 @@ export function BookDetailPanel() {
     action()
     setShowFilterPanel(false)
     setSelectedBook(null)
+  }
+
+  async function runAudioDiagnostics() {
+    setAudioDiagnosticsLoading(true)
+    try {
+      const res = await fetch(`/api/books/${encodeURIComponent(book.id)}/audio-diagnostics`)
+      const data = await res.json()
+      setAudioDiagnostics(data)
+    } catch (err: any) {
+      setAudioDiagnostics({ error: String(err?.message ?? err ?? 'Audio diagnostics failed') })
+    } finally {
+      setAudioDiagnosticsLoading(false)
+    }
   }
 
   return (
@@ -295,6 +310,38 @@ export function BookDetailPanel() {
                   src={`/api/books/${encodeURIComponent(book.id)}/audio`}
                   className="w-full"
                 />
+                <button
+                  type="button"
+                  onClick={runAudioDiagnostics}
+                  disabled={audioDiagnosticsLoading}
+                  className="rounded-xl border border-sky-500/10 bg-sky-500/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-sky-300 transition-all hover:bg-sky-500/20 disabled:opacity-50"
+                >
+                  {audioDiagnosticsLoading ? 'Checking Audio...' : 'Run Audio Diagnostic'}
+                </button>
+                {audioDiagnostics && (
+                  <div className="rounded-xl border border-white/[0.06] bg-black/20 p-3 text-[11px] font-bold text-slate-500 space-y-2">
+                    {audioDiagnostics.error ? (
+                      <div className="text-rose-300">{audioDiagnostics.error}</div>
+                    ) : (
+                      <>
+                        <div className="break-all font-mono text-slate-400">{audioDiagnostics.filePath}</div>
+                        <div>
+                          Size: {Number(audioDiagnostics.sizeBytes || 0).toLocaleString()} bytes · Modified: {audioDiagnostics.modifiedAt ? new Date(audioDiagnostics.modifiedAt).toLocaleString() : 'unknown'}
+                        </div>
+                        <div className={audioDiagnostics.likelyAudible ? 'text-emerald-400' : 'text-rose-300'}>
+                          {audioDiagnostics.likelyAudible ? 'Audio signal detected' : 'No usable audio signal detected'}
+                        </div>
+                        <div className="grid gap-1">
+                          {(audioDiagnostics.samples || []).map((sample: any) => (
+                            <div key={sample.startSec} className="font-mono">
+                              t={sample.startSec}s max={sample.maxDb ?? '-inf'}dB mean={sample.meanDb ?? '-inf'}dB {sample.ok ? 'ok' : 'failed'}
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 

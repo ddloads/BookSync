@@ -5,7 +5,7 @@ import fs from 'fs'
 import axios from 'axios'
 import { createServer } from 'http'
 import { WebSocket, WebSocketServer } from 'ws'
-import type { ChildProcess } from 'child_process'
+import { spawn, type ChildProcess } from 'child_process'
 import { DatabaseService } from '../main/DatabaseService'
 import { AudibleService } from '../main/AudibleService'
 import { ExportService } from '../main/ExportService'
@@ -49,6 +49,20 @@ app.use(express.json({ limit: '2mb' }))
 
 function getNasPath(): string {
   return dbService.getSetting('nasPath', '').trim() || '/downloads'
+}
+
+function getDownloadedAudioFile(bookId: string) {
+  const book = dbService.getBooks().find((candidate) => candidate.id === bookId)
+  if (!book || !book.isDownloaded || !book.nasPath) {
+    return { error: 'Downloaded audio file not found for this title.' }
+  }
+
+  const filePath = path.resolve(book.nasPath)
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    return { error: 'Audio file is missing from the export path.', book, filePath }
+  }
+
+  return { book, filePath, stat: fs.statSync(filePath) }
 }
 
 function broadcast(type: string, data: any = null) {
@@ -484,19 +498,13 @@ app.get('/api/health', (_req, res) => {
 })
 
 app.get('/api/books/:id/audio', (req, res) => {
-  const book = dbService.getBooks().find((candidate) => candidate.id === req.params.id)
-  if (!book || !book.isDownloaded || !book.nasPath) {
-    res.status(404).json({ error: 'Downloaded audio file not found for this title.' })
+  const audio = getDownloadedAudioFile(req.params.id)
+  if (audio.error || !audio.filePath || !audio.stat) {
+    res.status(404).json({ error: audio.error })
     return
   }
 
-  const filePath = path.resolve(book.nasPath)
-  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
-    res.status(404).json({ error: 'Audio file is missing from the export path.' })
-    return
-  }
-
-  const stat = fs.statSync(filePath)
+  const { filePath, stat } = audio
   const ext = path.extname(filePath).toLowerCase()
   const contentType = ext === '.mp3' ? 'audio/mpeg' : 'audio/mp4'
   const range = req.headers.range
@@ -527,6 +535,62 @@ app.get('/api/books/:id/audio', (req, res) => {
   res.setHeader('Content-Range', `bytes ${start}-${end}/${stat.size}`)
   res.setHeader('Content-Length', end - start + 1)
   fs.createReadStream(filePath, { start, end }).pipe(res)
+})
+
+function runVolumeDetect(filePath: string, startSec: number): Promise<{ startSec: number; meanDb: number | null; maxDb: number | null; ok: boolean; error?: string }> {
+  const ffmpegPath = process.env.BOOKSYNC_FFMPEG_PATH || 'ffmpeg'
+  return new Promise((resolve) => {
+    const proc = spawn(ffmpegPath, [
+      '-hide_banner',
+      '-nostats',
+      '-ss', String(startSec),
+      '-t', '10',
+      '-i', filePath,
+      '-vn',
+      '-af', 'volumedetect',
+      '-f', 'null',
+      '-',
+    ])
+    let stderr = ''
+    proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString() })
+    proc.on('error', (err) => {
+      resolve({ startSec, meanDb: null, maxDb: null, ok: false, error: err.message })
+    })
+    proc.on('close', (code) => {
+      const meanMatch = stderr.match(/mean_volume:\s*(-?(?:inf|\d+(?:\.\d+)?))\s*dB/)
+      const maxMatch = stderr.match(/max_volume:\s*(-?(?:inf|\d+(?:\.\d+)?))\s*dB/)
+      const parseDb = (value?: string) => {
+        if (!value || value === '-inf' || value === 'inf') return null
+        return Number(value)
+      }
+      const meanDb = parseDb(meanMatch?.[1])
+      const maxDb = parseDb(maxMatch?.[1])
+      resolve({
+        startSec,
+        meanDb,
+        maxDb,
+        ok: code === 0 && maxDb !== null && maxDb > -60,
+        error: code === 0 ? undefined : stderr.split(/\r?\n/).filter(Boolean).slice(-8).join('\n'),
+      })
+    })
+  })
+}
+
+app.get('/api/books/:id/audio-diagnostics', async (req, res) => {
+  const audio = getDownloadedAudioFile(req.params.id)
+  if (audio.error || !audio.filePath || !audio.stat) {
+    res.status(404).json({ error: audio.error, filePath: audio.filePath })
+    return
+  }
+
+  const samples = await Promise.all([30, 300, 900].map((startSec) => runVolumeDetect(audio.filePath!, startSec)))
+  res.json({
+    filePath: audio.filePath,
+    sizeBytes: audio.stat.size,
+    modifiedAt: audio.stat.mtime.toISOString(),
+    samples,
+    likelyAudible: samples.some((sample) => sample.ok),
+  })
 })
 
 app.post('/api/rpc', async (req, res) => {
