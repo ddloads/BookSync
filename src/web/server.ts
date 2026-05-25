@@ -439,7 +439,10 @@ const rpcHandlers: Record<string, (...args: any[]) => any> = {
     broadcast('library:updated', { source: 'toggle-ignore', bookId, isIgnored })
     return isIgnored
   },
-  'settings:get': (key: string, defaultValue: string) => dbService.getSetting(key, defaultValue),
+  'settings:get': (key: string, defaultValue: string) => {
+    const fallback = key === 'nasPath' ? '/downloads' : defaultValue
+    return dbService.getSetting(key, fallback)
+  },
   'settings:set': (key: string, value: string) => {
     dbService.setSetting(key, value)
     return true

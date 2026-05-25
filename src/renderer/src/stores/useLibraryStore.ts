@@ -294,7 +294,7 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
         closeBehavior,
         accounts,
       ] = await Promise.all([
-        window.api.settings.get('nasPath', ''),
+        window.api.settings.get('nasPath', '/downloads'),
         window.api.settings.get('activationBytes', ''),
         window.api.settings.get('azureUrl', ''),
         window.api.settings.get('azureUsername', ''),
