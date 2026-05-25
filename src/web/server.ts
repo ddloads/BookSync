@@ -81,6 +81,9 @@ function appLog(type: 'success' | 'error' | 'info', title: string, message: stri
   } catch {
     // Logging should never break the API path.
   }
+  if (type === 'error') {
+    broadcast('log:activity', { type, title, message })
+  }
 }
 
 function formatError(err: unknown): string {
@@ -355,7 +358,12 @@ async function downloadBookAction(bookId: string) {
     const azureConfig = getAzureConfig()
     if (azureConfig) scheduleAzureScanAfterDownloads(azureConfig)
   } catch (err: any) {
-    if (isCancellationError(err)) return { success: false, cancelled: true }
+    if (isCancellationError(err)) {
+      appLog('info', 'Download Cancelled', `"${book.title}" was cancelled.`)
+      return { success: false, cancelled: true }
+    }
+    const message = formatError(err)
+    appLog('error', 'Download Failed', `"${book.title}" (${book.id}): ${message}`)
     throw err
   } finally {
     activeDownloads.delete(bookId)
@@ -600,7 +608,11 @@ app.post('/api/rpc', async (req, res) => {
   try {
     res.json({ data: await handler(...args) })
   } catch (err) {
-    res.status(500).json({ error: formatError(err) })
+    const message = formatError(err)
+    if (channel !== 'book:download') {
+      appLog('error', 'Action Failed', `${String(channel)}: ${message}`)
+    }
+    res.status(500).json({ error: message })
   }
 })
 

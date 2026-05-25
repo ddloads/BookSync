@@ -507,6 +507,9 @@ function appLog(type: AppLogType, title: string, message: string, meta?: unknown
       // Avoid crashing due to log persistence failures.
     }
   }
+  if (type === 'error') {
+    mainWindow?.webContents.send('log:activity', { type, title, message: line })
+  }
 }
 
 function handleIpc(
@@ -900,8 +903,10 @@ function createWindow(): void {
       }
     } catch (err: any) {
       if (isCancellationError(err)) {
+        appLog('info', 'Download Cancelled', `"${book.title}" was cancelled.`)
         return { success: false, cancelled: true }
       }
+      appLog('error', 'Download Failed', `"${book.title}" (${book.id}): ${formatError(err)}`)
       throw err
     } finally {
       activeDownloads.delete(bookId)

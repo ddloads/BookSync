@@ -34,7 +34,7 @@ export interface IElectronAPI {
     onRemoteChanged: (callback: () => void) => () => void
   }
   book: {
-    download: (bookId: string) => Promise<{ success: boolean; cancelled?: boolean }>
+    download: (bookId: string) => Promise<{ success: boolean; cancelled?: boolean; error?: string }>
     rescan: (bookId: string) => Promise<any>
     rescanMany: (bookIds: string[]) => Promise<any[]>
     cancelDownload: (bookId: string) => Promise<{ cancelled: boolean }>
@@ -69,6 +69,7 @@ export interface IElectronAPI {
     get: (limit?: number) => Promise<any[]>
     add: (type: 'success' | 'error' | 'info', title: string, message: string) => Promise<boolean>
     clear: () => Promise<boolean>
+    onActivity: (callback: (data: { type: 'success' | 'error' | 'info'; title: string; message: string }) => void) => () => void
   }
 }
 

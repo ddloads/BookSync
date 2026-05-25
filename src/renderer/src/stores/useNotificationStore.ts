@@ -3,6 +3,7 @@ import { ExternalToast, toast } from 'sonner'
 import { Notification } from '../types'
 
 const NOTIFICATION_TTL_MS = 5000
+const ERROR_DEDUPE_MS = 3000
 
 interface NotificationState {
   notifications: Notification[]
@@ -19,6 +20,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
   showNotifications: false,
 
   addNotification: (title, description, type) => {
+    let shouldAdd = true
     const entry: Notification = {
       id: Math.random().toString(36).substring(7),
       title,
@@ -26,10 +28,22 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       type,
       timestamp: new Date()
     }
-    set(state => ({ notifications: [entry, ...state.notifications].slice(0, 50) }))
-    window.setTimeout(() => {
-      set(state => ({ notifications: state.notifications.filter(notification => notification.id !== entry.id) }))
-    }, NOTIFICATION_TTL_MS)
+    set(state => {
+      const duplicate = state.notifications.find(notification =>
+        notification.type === type &&
+        notification.title === title &&
+        notification.description === description &&
+        entry.timestamp.getTime() - notification.timestamp.getTime() < ERROR_DEDUPE_MS
+      )
+      shouldAdd = !duplicate
+      return shouldAdd ? { notifications: [entry, ...state.notifications].slice(0, 50) } : state
+    })
+
+    if (shouldAdd && type !== 'error') {
+      window.setTimeout(() => {
+        set(state => ({ notifications: state.notifications.filter(notification => notification.id !== entry.id) }))
+      }, NOTIFICATION_TTL_MS)
+    }
   },
 
   removeNotification: (id) => set(state => ({ notifications: state.notifications.filter(notification => notification.id !== id) })),

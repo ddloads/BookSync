@@ -39,7 +39,8 @@ function App() {
   const {
     notifications,
     showNotifications,
-    hideNotifications
+    hideNotifications,
+    addNotification
   } = useNotificationStore()
 
   const mainScrollRef = useRef<HTMLDivElement>(null)
@@ -49,6 +50,12 @@ function App() {
     loadSettings()
     loadLibrary()
   }, [])
+
+  useEffect(() => {
+    return window.api.logs.onActivity(({ type, title, message }) => {
+      addNotification(title, message, type)
+    })
+  }, [addNotification])
 
   useEffect(() => {
     const handleScroll = () => {

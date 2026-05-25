@@ -86,6 +86,11 @@ contextBridge.exposeInMainWorld('api', {
     get: (limit?: number) => ipcRenderer.invoke('log:get', limit),
     add: (type: 'success' | 'error' | 'info', title: string, message: string) =>
       ipcRenderer.invoke('log:add', type, title, message),
-    clear: () => ipcRenderer.invoke('log:clear')
+    clear: () => ipcRenderer.invoke('log:clear'),
+    onActivity: (callback: (data: { type: 'success' | 'error' | 'info'; title: string; message: string }) => void) => {
+      const listener = (_event: any, data: any) => callback(data)
+      ipcRenderer.on('log:activity', listener)
+      return () => ipcRenderer.removeListener('log:activity', listener)
+    }
   }
 })

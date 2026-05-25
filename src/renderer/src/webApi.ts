@@ -245,6 +245,7 @@ if (!window.api) {
       get: (limit?: number) => rpc('log:get', limit),
       add: (type, title, message) => rpc('log:add', type, title, message),
       clear: () => rpc('log:clear'),
+      onActivity: (callback) => on('log:activity', callback),
     },
   } satisfies IElectronAPI
 }

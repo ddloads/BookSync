@@ -792,14 +792,15 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
                 // Remove from queue if cancelled
                 set(s => ({ queue: s.queue.filter(q => q.bookId !== nextItem.bookId) }))
               } else {
+                const msg = result.error || 'Download failed'
                 set(s => ({
-                  queue: s.queue.map(q => q.bookId === nextItem.bookId ? { ...q, status: 'failed', error: 'Download failed' } : q)
+                  queue: s.queue.map(q => q.bookId === nextItem.bookId ? { ...q, status: 'failed', error: msg } : q)
                 }))
-                notifyError(`${book.title}: Download failed`, {
+                notifyError(`${book.title}: ${msg}`, {
                   activityTitle: 'Download Failed',
-                  activityDescription: `${book.title}: Download failed`
+                  activityDescription: `${book.title}: ${msg}`
                 })
-                logClient('error', 'UI Queue', `Download failed for ${nextItem.bookId}`)
+                logClient('error', 'UI Queue', `Download failed for ${nextItem.bookId}: ${msg}`)
               }
             } else {
               const completedAt = new Date().toISOString()
