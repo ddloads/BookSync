@@ -9,7 +9,13 @@ services:
       - BOOKSYNC_APP_PATH=/app
     volumes:
       - ${BOOKSYNC_CONFIG_PATH:-./config}:/config
-      - ${BOOKSYNC_DOWNLOADS_PATH:-/var/lib/docker/volumes/Audiobooks/_data}:/downloads
+      - Audiobooks:/downloads
     ports:
       - ${BOOKSYNC_PORT:-3015}:3000
     restart: unless-stopped
+
+volumes:
+  # Pre-existing named docker volume — managed outside this stack so a
+  # `docker compose down -v` here can't wipe your audiobook library.
+  Audiobooks:
+    external: true
