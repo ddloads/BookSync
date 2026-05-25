@@ -15,6 +15,7 @@ WORKDIR /app
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      build-essential \
       ca-certificates \
       ffmpeg \
       python3 \
@@ -23,7 +24,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/package*.json ./
-COPY --from=build /app/node_modules ./node_modules
+RUN npm ci --omit=dev --ignore-scripts && \
+    npm rebuild better-sqlite3
 COPY --from=build /app/dist-web ./dist-web
 COPY --from=build /app/src/main/python ./src/main/python
 
@@ -34,6 +36,7 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV BOOKSYNC_APP_PATH=/app
 ENV BOOKSYNC_DATA_DIR=/config
+ENV BOOKSYNC_FFMPEG_PATH=/usr/bin/ffmpeg
 
 VOLUME ["/config", "/downloads"]
 EXPOSE 3000

@@ -3,7 +3,7 @@ import originalFfmpegPath from 'ffmpeg-static';
 import path from 'path';
 import fs from 'fs';
 
-let ffmpegPath = originalFfmpegPath;
+let ffmpegPath = process.env.BOOKSYNC_FFMPEG_PATH || originalFfmpegPath;
 if (ffmpegPath && ffmpegPath.includes('app.asar')) {
   ffmpegPath = ffmpegPath.replace('app.asar', 'app.asar.unpacked');
 }
