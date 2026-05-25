@@ -1,6 +1,7 @@
 import express from 'express'
 import path from 'path'
 import os from 'os'
+import fs from 'fs'
 import axios from 'axios'
 import { createServer } from 'http'
 import { WebSocket, WebSocketServer } from 'ws'
@@ -480,6 +481,52 @@ const rpcHandlers: Record<string, (...args: any[]) => any> = {
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', version: getAppVersion(), mode: 'web' })
+})
+
+app.get('/api/books/:id/audio', (req, res) => {
+  const book = dbService.getBooks().find((candidate) => candidate.id === req.params.id)
+  if (!book || !book.isDownloaded || !book.nasPath) {
+    res.status(404).json({ error: 'Downloaded audio file not found for this title.' })
+    return
+  }
+
+  const filePath = path.resolve(book.nasPath)
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    res.status(404).json({ error: 'Audio file is missing from the export path.' })
+    return
+  }
+
+  const stat = fs.statSync(filePath)
+  const ext = path.extname(filePath).toLowerCase()
+  const contentType = ext === '.mp3' ? 'audio/mpeg' : 'audio/mp4'
+  const range = req.headers.range
+
+  res.setHeader('Accept-Ranges', 'bytes')
+  res.setHeader('Content-Type', contentType)
+
+  if (!range) {
+    res.setHeader('Content-Length', stat.size)
+    fs.createReadStream(filePath).pipe(res)
+    return
+  }
+
+  const match = range.match(/bytes=(\d+)-(\d*)/)
+  if (!match) {
+    res.status(416).end()
+    return
+  }
+
+  const start = Number(match[1])
+  const end = match[2] ? Number(match[2]) : stat.size - 1
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start >= stat.size || end >= stat.size || start > end) {
+    res.status(416).setHeader('Content-Range', `bytes */${stat.size}`).end()
+    return
+  }
+
+  res.status(206)
+  res.setHeader('Content-Range', `bytes ${start}-${end}/${stat.size}`)
+  res.setHeader('Content-Length', end - start + 1)
+  fs.createReadStream(filePath, { start, end }).pipe(res)
 })
 
 app.post('/api/rpc', async (req, res) => {

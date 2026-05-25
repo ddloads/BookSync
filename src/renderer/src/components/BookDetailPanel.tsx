@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import {
-  BookOpen, CheckCircle2, Clock, Copy, Download, ExternalLink, Eye, EyeOff, HardDrive, RefreshCw, X
+  BookOpen, CheckCircle2, Clock, Copy, Download, ExternalLink, Eye, EyeOff, HardDrive, PlayCircle, RefreshCw, X
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Book } from '../types'
@@ -36,6 +36,7 @@ function normalizedContributorKey(value: string | null | undefined): string {
 
 export function BookDetailPanel() {
   const book = useLibraryStore(s => s.selectedBook)!
+  const isWebRuntime = !navigator.userAgent.toLowerCase().includes('electron')
   const books = useLibraryStore(s => s.books)
   const detailsCache = useLibraryStore(s => s.detailsCache)
   const detailsLoading = useLibraryStore(s => s.detailsLoading)
@@ -276,6 +277,24 @@ export function BookDetailPanel() {
                     <Copy size={14} />
                   </button>
                 </div>
+              </div>
+            )}
+
+            {book.isDownloaded && isWebRuntime && (
+              <div className="p-4 rounded-2xl border border-sky-500/10 bg-sky-500/[0.03] space-y-3">
+                <div className="flex items-center gap-2">
+                  <PlayCircle size={16} className="text-sky-400" />
+                  <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-sky-300">Audio Verification</h4>
+                    <p className="text-[11px] font-bold text-slate-600">Plays the final exported file from the audiobook library.</p>
+                  </div>
+                </div>
+                <audio
+                  controls
+                  preload="metadata"
+                  src={`/api/books/${encodeURIComponent(book.id)}/audio`}
+                  className="w-full"
+                />
               </div>
             )}
 
