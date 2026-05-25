@@ -37,7 +37,6 @@ COPY --from=build-stage /app/out ./out
 COPY --from=build-stage /app/node_modules ./node_modules
 COPY --from=build-stage /app/package.json ./package.json
 COPY --from=build-stage /app/src/main/python/audible_wrapper.py ./src/main/python/audible_wrapper.py
-COPY --from=build-stage /app/resources ./resources
 
 # Create data and downloads directories
 RUN mkdir -p /config/booksync /downloads
