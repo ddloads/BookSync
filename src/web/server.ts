@@ -46,6 +46,10 @@ const wss = new WebSocketServer({ server, path: '/api/events' })
 
 app.use(express.json({ limit: '2mb' }))
 
+function getNasPath(): string {
+  return dbService.getSetting('nasPath', '').trim() || '/downloads'
+}
+
 function broadcast(type: string, data: any = null) {
   const message = JSON.stringify({ type, data })
   wss.clients.forEach((client) => {
@@ -252,8 +256,7 @@ async function enrichLibrary(): Promise<void> {
 }
 
 async function scanNasAction(onProgress?: (data: any) => void) {
-  const nasPath = dbService.getSetting('nasPath', '')
-  if (!nasPath) throw new Error('NAS Path not set in Settings.')
+  const nasPath = getNasPath()
   const books = dbService.getBooks()
   const foundResults = await scanService.scanAndMatch(nasPath, books, (current, total, filename) => {
     const progress = { current, total, filename, source: 'nas' }
@@ -285,8 +288,7 @@ async function downloadBookAction(bookId: string) {
   if (!accountId) throw new Error('No account associated with this book. Try syncing your library.')
   const account = dbService.getAccount(accountId)
   if (!account) throw new Error(`Account not found for this book (ID: ${accountId})`)
-  const nasPath = dbService.getSetting('nasPath', '')
-  if (!nasPath) throw new Error('NAS Path not set in Settings.')
+  const nasPath = getNasPath()
 
   const abortController = new AbortController()
   activeDownloads.set(bookId, { abortController, ffmpegProcess: null })
@@ -349,8 +351,7 @@ async function downloadBookAction(bookId: string) {
 }
 
 async function rescanBook(bookId: string) {
-  const nasPath = dbService.getSetting('nasPath', '')
-  if (!nasPath) throw new Error('NAS Path not set in Settings.')
+  const nasPath = getNasPath()
   const book = dbService.getBooks().find((candidate) => candidate.id === bookId)
   if (!book) throw new Error('Book not found in database.')
   const found = (await scanService.scanAndMatch(nasPath, [book])).find((result) => result.id === book.id)
@@ -360,8 +361,7 @@ async function rescanBook(bookId: string) {
 }
 
 async function rescanMany(bookIds: string[]) {
-  const nasPath = dbService.getSetting('nasPath', '')
-  if (!nasPath) throw new Error('NAS Path not set in Settings.')
+  const nasPath = getNasPath()
   const allBooks = dbService.getBooks()
   const books = bookIds.map((id) => allBooks.find((book) => book.id === id)).filter(Boolean) as Book[]
   const foundResults = await scanService.scanAndMatch(nasPath, books)
@@ -442,7 +442,8 @@ const rpcHandlers: Record<string, (...args: any[]) => any> = {
   },
   'settings:get': (key: string, defaultValue: string) => {
     const fallback = key === 'nasPath' ? '/downloads' : defaultValue
-    return dbService.getSetting(key, fallback)
+    const value = dbService.getSetting(key, fallback)
+    return key === 'nasPath' && !value.trim() ? '/downloads' : value
   },
   'settings:set': (key: string, value: string) => {
     dbService.setSetting(key, value)
