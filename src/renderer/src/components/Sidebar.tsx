@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, BookOpen, ChevronLeft, ChevronRight, Download, Library, RefreshCw, Settings } from 'lucide-react'
+import { Bell, BookOpen, ChevronLeft, ChevronRight, Cloud, Download, Library, RefreshCw, Settings } from 'lucide-react'
 import { useLibraryStore } from '../stores/useLibraryStore'
 import { useNotificationStore } from '../stores/useNotificationStore'
 
@@ -9,7 +9,9 @@ export function Sidebar() {
   const activeTab = useLibraryStore(s => s.activeTab)
   const setActiveTab = useLibraryStore(s => s.setActiveTab)
   const isSyncing = useLibraryStore(s => s.isSyncing)
+  const isScanning = useLibraryStore(s => s.isScanning)
   const handleSync = useLibraryStore(s => s.handleSync)
+  const handleScanAzure = useLibraryStore(s => s.handleScanAzure)
   const enrichProgress = useLibraryStore(s => s.enrichProgress)
   const queue = useLibraryStore(s => s.queue)
   const toggleQueuePanel = useLibraryStore(s => s.toggleQueuePanel)
@@ -120,6 +122,16 @@ export function Sidebar() {
         >
           <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
           <span className={collapsed ? 'hidden' : 'hidden lg:block'}>SYNC CLOUD</span>
+        </button>
+
+        <button
+          onClick={handleScanAzure}
+          disabled={isScanning}
+          title="Sync Azure"
+          className="w-full bg-sky-500/10 hover:bg-sky-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-sky-400 text-[13px] font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all duration-300 border border-sky-500/10 active:scale-95"
+        >
+          <Cloud size={16} className={isScanning ? 'animate-pulse' : ''} />
+          <span className={collapsed ? 'hidden' : 'hidden lg:block'}>SYNC AZURE</span>
         </button>
 
         {enrichProgress && (
