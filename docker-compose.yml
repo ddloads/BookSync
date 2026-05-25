@@ -3,13 +3,13 @@ services:
     build: .
     container_name: booksync
     environment:
-      - TZ=Etc/UTC
+      - TZ=${TZ:-Etc/UTC}
       - PORT=3000
       - BOOKSYNC_DATA_DIR=/config
       - BOOKSYNC_APP_PATH=/app
     volumes:
-      - ./config:/config
-      - ${DOWNLOADS_PATH:-./downloads}:/downloads
+      - ${BOOKSYNC_CONFIG_PATH:-./config}:/config
+      - ${BOOKSYNC_DOWNLOADS_PATH:?Set BOOKSYNC_DOWNLOADS_PATH to your audiobook library host path}:/downloads
     ports:
       - ${BOOKSYNC_PORT:-3015}:3000
     restart: unless-stopped
