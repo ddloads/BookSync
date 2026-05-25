@@ -9,7 +9,7 @@ services:
       - BOOKSYNC_APP_PATH=/app
     volumes:
       - ${BOOKSYNC_CONFIG_PATH:-./config}:/config
-      - ${BOOKSYNC_DOWNLOADS_PATH:?Set BOOKSYNC_DOWNLOADS_PATH to your audiobook library host path}:/downloads
+      - ${BOOKSYNC_DOWNLOADS_PATH:-/var/lib/docker/volumes/Audiobooks/_data}:/downloads
     ports:
       - ${BOOKSYNC_PORT:-3015}:3000
     restart: unless-stopped

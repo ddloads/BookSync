@@ -5,7 +5,7 @@ Create a local `.env` file next to `docker-compose.yml`. This file is not commit
 ```env
 BOOKSYNC_PORT=3015
 BOOKSYNC_CONFIG_PATH=./config
-BOOKSYNC_DOWNLOADS_PATH=/absolute/path/to/audiobooks
+BOOKSYNC_DOWNLOADS_PATH=/var/lib/docker/volumes/Audiobooks/_data
 TZ=America/Chicago
 ```
 
