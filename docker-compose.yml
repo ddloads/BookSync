@@ -3,18 +3,13 @@ services:
     build: .
     container_name: booksync
     environment:
-      - PUID=1000
-      - PGID=1000
       - TZ=Etc/UTC
-      - SUBFOLDER=/ #optional
-      - TITLE=BookSync
-      - BOOKSYNC_DATA_DIR=/config/booksync
-      - PORT=3005
+      - PORT=3000
+      - BOOKSYNC_DATA_DIR=/config
+      - BOOKSYNC_APP_PATH=/app
     volumes:
       - ./config:/config
       - ${DOWNLOADS_PATH:-./downloads}:/downloads
     ports:
-      - ${WEBTOP_PORT:-3010}:3000 # Webtop HTTP
-      - ${WEBTOP_HTTPS_PORT:-3011}:3001 # Webtop HTTPS
-      - ${PORT:-3005}:3005 # BookSync Companion API
+      - ${BOOKSYNC_PORT:-3015}:3000
     restart: unless-stopped

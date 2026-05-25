@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-web
+out
+build
+config
+downloads
+.git
+.env
+.idea
+.claude
+.sync
+nul
+adb_out.txt
+Capture.PNG

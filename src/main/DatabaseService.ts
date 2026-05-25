@@ -1,4 +1,3 @@
-import { app } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import Database from 'better-sqlite3';
@@ -6,12 +5,14 @@ import { Book, BookDetails, LogEntry } from './types';
 import { BookSchema, BookDetailsSchema } from '../shared/schemas';
 import { safeParseJSON, safeValidate } from '../shared/validate';
 import { mergeBooksForSave } from './bookPersistence';
+import { getUserDataPath } from './runtime';
 
 export class DatabaseService {
   private db: Database.Database;
 
   constructor() {
-    const dbPath = path.join(app.getPath('userData'), 'booksync.db');
+    const dbPath = path.join(getUserDataPath(), 'booksync.db');
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
     this.db = new Database(dbPath);
     this.db.pragma('journal_mode = WAL');
     this.db.pragma('foreign_keys = ON');

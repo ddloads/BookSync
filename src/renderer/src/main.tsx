@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import './webApi'
 import App from './App'
 import './assets/main.css'
 

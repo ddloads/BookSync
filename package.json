@@ -7,9 +7,11 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "build:web": "vite build --config vite.web.config.ts && vite build --config vite.server.config.ts",
     "build:python": "python -m venv src/main/python/venv && .\\src\\main\\python\\venv\\Scripts\\pip install audible audible-cli pyinstaller && .\\src\\main\\python\\venv\\Scripts\\pyinstaller --onefile --distpath resources src/main/python/audible_wrapper.py",
     "preview": "electron-vite preview",
     "start": "electron-vite preview",
+    "start:web": "node dist-web/server/index.cjs",
     "postinstall": "electron-builder install-app-deps",
     "rebuild": "electron-builder install-app-deps",
     "package": "npm run build:python && npm run build && electron-builder",

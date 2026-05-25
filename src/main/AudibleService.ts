@@ -1,8 +1,8 @@
-import { app } from 'electron';
 import path from 'path';
 import { spawn } from 'child_process';
 import fs from 'fs';
 import { parseIsoDuration } from './audibleUtils';
+import { getAppPath, isPackagedApp } from './runtime';
 
 type WrapperProgress = {
   stage?: string
@@ -20,16 +20,17 @@ type SyncedBookResult = {
 
 export class AudibleService {
   private getWrapperPath(): string {
-    const isDev = !app.isPackaged;
+    const appPath = getAppPath();
+    const isDev = !isPackagedApp();
     if (process.platform === 'win32') {
       if (isDev) {
-        return path.join(app.getAppPath(), 'resources', 'audible_wrapper.exe');
+        return path.join(appPath, 'resources', 'audible_wrapper.exe');
       } else {
         return path.join(process.resourcesPath, 'audible_wrapper.exe');
       }
     }
     // On Linux/Docker or if we want to run script directly
-    return path.join(app.getAppPath(), 'src', 'main', 'python', 'audible_wrapper.py');
+    return path.join(appPath, 'src', 'main', 'python', 'audible_wrapper.py');
   }
 
   private runWrapper(args: string[], onProgress?: (progress: WrapperProgress) => void): Promise<any> {
@@ -41,7 +42,7 @@ export class AudibleService {
       
       if (isPythonScript) {
         // Try to use venv if it exists
-        const venvPath = path.join(app.getAppPath(), 'src', 'main', 'python', 'venv', 
+        const venvPath = path.join(getAppPath(), 'src', 'main', 'python', 'venv', 
           process.platform === 'win32' ? 'Scripts' : 'bin',
           process.platform === 'win32' ? 'python.exe' : 'python3');
         

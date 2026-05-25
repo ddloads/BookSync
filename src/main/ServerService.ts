@@ -3,7 +3,7 @@ import cors from 'cors';
 import { Server } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { DatabaseService } from './DatabaseService';
-import { app as electronApp } from 'electron';
+import { getAppVersion } from './runtime';
 
 export class ServerService {
   private app: express.Application;
@@ -86,7 +86,7 @@ export class ServerService {
     this.app.get('/api/status', (req, res) => {
       res.json({
         status: 'ok',
-        version: electronApp.getVersion(),
+        version: getAppVersion(),
         platform: process.platform,
       });
     });
