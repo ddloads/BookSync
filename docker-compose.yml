@@ -1,0 +1,20 @@
+services:
+  booksync:
+    build: .
+    container_name: booksync
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - SUBFOLDER=/ #optional
+      - TITLE=BookSync
+      - BOOKSYNC_DATA_DIR=/config/booksync
+      - PORT=3005
+    volumes:
+      - ./config:/config
+      - /path/to/your/audiobooks:/downloads
+    ports:
+      - 3000:3000 # Webtop HTTP
+      - 3001:3001 # Webtop HTTPS
+      - 3005:3005 # BookSync Companion API
+    restart: unless-stopped

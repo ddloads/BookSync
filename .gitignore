@@ -1,0 +1,34 @@
+node_modules/
+out/
+dist/
+build/
+.sync/
+.idea/
+.claude/
+.expo/
+.gradle/
+android/build/
+
+# Python
+src/main/python/venv/
+__pycache__/
+*.pyc
+
+# Sensitive / runtime data
+settings.json
+db.json
+booksync.db
+*.aax
+*.m4b
+
+# Resources (build products)
+resources/audible_wrapper.exe
+
+# OS / artifacts
+.DS_Store
+Thumbs.db
+nul
+*.PNG
+Capture.PNG
+Logo.png
+Logo.ico
