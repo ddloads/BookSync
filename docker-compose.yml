@@ -14,7 +14,7 @@ services:
       - ./config:/config
       - ${DOWNLOADS_PATH:-./downloads}:/downloads
     ports:
-      - 3000:3000 # Webtop HTTP
+      - ${WEBTOP_PORT:-3010}:3000 # Webtop HTTP
       - 3001:3001 # Webtop HTTPS
-      - 3005:3005 # BookSync Companion API
+      - ${PORT:-3005}:3005 # BookSync Companion API
     restart: unless-stopped
