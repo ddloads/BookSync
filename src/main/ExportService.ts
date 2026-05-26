@@ -476,35 +476,25 @@ export class ExportService {
   private async moveFileSafe(sourcePath: string, targetPath: string): Promise<void> {
     try {
       await fs.promises.rename(sourcePath, targetPath);
+      return;
     } catch (err: any) {
       if (err?.code !== 'EXDEV') throw err;
-      const targetDir = path.dirname(targetPath);
-      const targetBase = path.basename(targetPath);
-      const stagedTargetPath = path.join(
-        targetDir,
-        `.${targetBase}.partial-${process.pid}-${Date.now()}`
-      );
-
-      try {
-        await fs.promises.copyFile(sourcePath, stagedTargetPath);
-        // CIFS/SMB-backed volumes (common when /downloads points at a NAS share)
-        // return EACCES from rename when the destination already exists instead
-        // of silently overwriting. Unlink first so the rename always lands on a
-        // clean target.
-        try {
-          await fs.promises.unlink(targetPath);
-        } catch (unlinkErr: any) {
-          if (unlinkErr?.code !== 'ENOENT') throw unlinkErr;
-        }
-        await fs.promises.rename(stagedTargetPath, targetPath);
-        await fs.promises.unlink(sourcePath);
-      } catch (copyErr) {
-        try {
-          await fs.promises.unlink(stagedTargetPath);
-        } catch {}
-        throw copyErr;
-      }
     }
+
+    // Cross-device move (e.g. /tmp -> /downloads on a Docker named volume).
+    // CIFS/SMB-backed shares reject same-directory rename of dot-prefixed
+    // partials with EACCES, so don't bother staging — copy straight to the
+    // final path. copyFile opens with O_TRUNC, so it overwrites any leftover
+    // target from a prior failed attempt.
+    try {
+      await fs.promises.copyFile(sourcePath, targetPath);
+    } catch (copyErr) {
+      try {
+        await fs.promises.unlink(targetPath);
+      } catch {}
+      throw copyErr;
+    }
+    await fs.promises.unlink(sourcePath);
   }
 
 }
