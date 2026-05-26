@@ -9,6 +9,8 @@ export function FilterPanel() {
   const setFilterLibraryId = useFilterStore(s => s.setFilterLibraryId)
   const filterHasSeries = useFilterStore(s => s.filterHasSeries)
   const setFilterHasSeries = useFilterStore(s => s.setFilterHasSeries)
+  const filterHasSilent = useFilterStore(s => s.filterHasSilent)
+  const setFilterHasSilent = useFilterStore(s => s.setFilterHasSilent)
   const filterDurationMin = useFilterStore(s => s.filterDurationMin)
   const setFilterDurationMin = useFilterStore(s => s.setFilterDurationMin)
   const filterDurationMax = useFilterStore(s => s.filterDurationMax)
@@ -123,6 +125,24 @@ export function FilterPanel() {
                   onClick={() => setFilterHasSeries(val)}
                   className={`flex-1 px-1 py-2 rounded-lg text-[9px] lg:text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
                     filterHasSeries === val ? 'bg-amber-500 text-[#020617] shadow-lg shadow-amber-500/20' : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Azure Silent Files */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">Azure Silent Files</label>
+            <div className="flex gap-1 p-1 bg-black/20 rounded-xl">
+              {([['all', 'All'], ['yes', 'Has Silent'], ['no', 'No Silent']] as const).map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => setFilterHasSilent(val)}
+                  className={`flex-1 px-1 py-2 rounded-lg text-[9px] lg:text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                    filterHasSilent === val ? 'bg-amber-500 text-[#020617] shadow-lg shadow-amber-500/20' : 'text-slate-500 hover:text-slate-300'
                   }`}
                 >
                   {label}

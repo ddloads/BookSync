@@ -15,6 +15,7 @@ import { AbsLibraryItem, decideAbsMatches } from '../main/absSync'
 import {
   AzureConfig,
   azureFetchLibraryItems,
+  azureFetchSilentBookAsins,
   azureListLibraries,
   azureTestConnection,
   azureTriggerScan,
@@ -299,6 +300,14 @@ async function scanAzureAction() {
   const allBooks = dbService.getBooks()
   const decision = decideAbsMatches(allBooks, azureItems as AbsLibraryItem[], { recentDownloadGraceMs: ABS_RECENT_DOWNLOAD_GRACE_MS })
   dbService.updateAbsStatus(decision.foundIds, decision.shouldResetUnmatched)
+
+  try {
+    const silentAsins = await azureFetchSilentBookAsins(dbService, config)
+    dbService.updateAzureSilentStatus(silentAsins)
+  } catch (err) {
+    appLog('error', 'Azure Sync', `Silent-files fetch failed: ${describeAzureError(err, 'silent-files fetch')}`)
+  }
+
   broadcast('library:updated', { source: 'azure' })
   return dbService.getBooks()
 }

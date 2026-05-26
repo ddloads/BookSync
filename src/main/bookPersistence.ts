@@ -14,6 +14,7 @@ export function mergeBooksForSave(
       ...book,
       isDownloaded: prev?.isDownloaded ?? false,
       isInAbs: prev?.isInAbs ?? false,
+      azureHasSilent: prev?.azureHasSilent ?? false,
       isIgnored: prev?.isIgnored ?? false,
       accountId: book.accountId || prev?.accountId,
       seriesSequence: book.seriesSequence || prev?.seriesSequence || null,

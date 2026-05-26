@@ -14,6 +14,7 @@ import { AbsLibraryItem, decideAbsMatches } from './absSync'
 import {
   AzureConfig,
   azureFetchLibraryItems,
+  azureFetchSilentBookAsins,
   azureListLibraries,
   azureTestConnection,
   azureTriggerScan,
@@ -367,6 +368,15 @@ async function scanAzureAction() {
 
     dbService.updateAbsStatus(decision.foundIds, decision.shouldResetUnmatched)
     appLog('success', 'Azure Sync', `Matched ${decision.foundIds.size} / ${allBooks.length} books`)
+
+    try {
+      const silentAsins = await azureFetchSilentBookAsins(dbService, config)
+      dbService.updateAzureSilentStatus(silentAsins)
+      appLog('info', 'Azure Sync', `Flagged ${silentAsins.size} books with silent files`)
+    } catch (err: any) {
+      appLog('error', 'Azure Sync', `Silent-files fetch failed: ${describeAzureError(err, 'silent-files fetch')}`)
+    }
+
     serverService?.broadcast('library:scan-progress', {
       current: 100,
       total: 100,

@@ -6,6 +6,7 @@ interface FilterState {
   filter: 'all' | 'synced' | 'pending' | 'ignored'
   filterLibraryId: 'all' | string
   filterHasSeries: 'all' | 'yes' | 'no'
+  filterHasSilent: 'all' | 'yes' | 'no'
   filterDurationMin: number | null
   filterDurationMax: number | null
   filterAuthors: Set<string>
@@ -32,6 +33,7 @@ interface FilterState {
   setFilter: (f: 'all' | 'synced' | 'pending' | 'ignored') => void
   setFilterLibraryId: (id: 'all' | string) => void
   setFilterHasSeries: (f: 'all' | 'yes' | 'no') => void
+  setFilterHasSilent: (f: 'all' | 'yes' | 'no') => void
   setFilterDurationMin: (v: number | null) => void
   setFilterDurationMax: (v: number | null) => void
   toggleAuthor: (a: string) => void
@@ -68,6 +70,7 @@ export const useFilterStore = create<FilterState>((set) => ({
   filter: 'all',
   filterLibraryId: 'all',
   filterHasSeries: 'all',
+  filterHasSilent: 'all',
   filterDurationMin: null,
   filterDurationMax: null,
   filterAuthors: new Set(),
@@ -94,6 +97,7 @@ export const useFilterStore = create<FilterState>((set) => ({
   setFilter: (f) => set({ filter: f }),
   setFilterLibraryId: (filterLibraryId) => set({ filterLibraryId }),
   setFilterHasSeries: (f) => set({ filterHasSeries: f }),
+  setFilterHasSilent: (f) => set({ filterHasSilent: f }),
   setFilterDurationMin: (v) => set({ filterDurationMin: v }),
   setFilterDurationMax: (v) => set({ filterDurationMax: v }),
   toggleAuthor: (a) => set(s => ({ filterAuthors: toggleSetItem(s.filterAuthors, a) })),
@@ -127,6 +131,7 @@ export const useFilterStore = create<FilterState>((set) => ({
     filterDurationMin: null,
     filterDurationMax: null,
     filterHasSeries: 'all',
+    filterHasSilent: 'all',
     searchQuery: '',
     authorSearch: '',
     seriesSearch: '',

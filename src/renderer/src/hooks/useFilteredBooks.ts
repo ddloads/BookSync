@@ -21,6 +21,7 @@ export function useFilteredBooks() {
   const filter = useFilterStore(s => s.filter)
   const filterLibraryId = useFilterStore(s => s.filterLibraryId)
   const filterHasSeries = useFilterStore(s => s.filterHasSeries)
+  const filterHasSilent = useFilterStore(s => s.filterHasSilent)
   const filterDurationMin = useFilterStore(s => s.filterDurationMin)
   const filterDurationMax = useFilterStore(s => s.filterDurationMax)
   const filterAuthors = useFilterStore(s => s.filterAuthors)
@@ -82,8 +83,9 @@ export function useFilteredBooks() {
     if (filterDurationMin !== null) count++
     if (filterDurationMax !== null) count++
     if (filterHasSeries !== 'all') count++
+    if (filterHasSilent !== 'all') count++
     return count
-  }, [filter, filterLibraryId, filterAuthors, filterSeries, filterNarrators, filterPublishers, filterCategories, filterDurationMin, filterDurationMax, filterHasSeries])
+  }, [filter, filterLibraryId, filterAuthors, filterSeries, filterNarrators, filterPublishers, filterCategories, filterDurationMin, filterDurationMax, filterHasSeries, filterHasSilent])
 
   const filteredBooks = useMemo(() => {
     let result = filter === 'ignored' ? books.filter(b => b.isIgnored) : books.filter(b => !b.isIgnored)
@@ -104,6 +106,8 @@ export function useFilteredBooks() {
     })
     if (filterHasSeries === 'yes') result = result.filter(b => b.series)
     else if (filterHasSeries === 'no') result = result.filter(b => !b.series)
+    if (filterHasSilent === 'yes') result = result.filter(b => b.azureHasSilent)
+    else if (filterHasSilent === 'no') result = result.filter(b => !b.azureHasSilent)
 
     if (filterDurationMin !== null || filterDurationMax !== null) {
       result = result.filter(b => {
@@ -141,7 +145,7 @@ export function useFilteredBooks() {
     })
 
     return result
-  }, [books, detailsCache, deferredSearchQuery, filter, filterLibraryId, sortBy, sortOrder, secondarySortBy, secondarySortOrder, filterAuthors, filterSeries, filterNarrators, filterPublishers, filterCategories, filterDurationMin, filterDurationMax, filterHasSeries])
+  }, [books, detailsCache, deferredSearchQuery, filter, filterLibraryId, sortBy, sortOrder, secondarySortBy, secondarySortOrder, filterAuthors, filterSeries, filterNarrators, filterPublishers, filterCategories, filterDurationMin, filterDurationMax, filterHasSeries, filterHasSilent])
 
   return {
     visibleBooks,

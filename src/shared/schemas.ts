@@ -19,6 +19,7 @@ export const BookSchema = z.object({
   isDownloaded: z.boolean(),
   nasPath: z.string().nullable().optional(),
   isInAbs: z.boolean().optional(),
+  azureHasSilent: z.boolean().optional(),
   isIgnored: z.boolean().optional(),
   accountId: z.string().optional(),
   downloadProgress: z.number().optional(),

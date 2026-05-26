@@ -145,6 +145,51 @@ export const azureFetchLibraryItems = async (
   return collected
 }
 
+/**
+ * Walk the Azure library filtered to books that have at least one audio file
+ * flagged as silent (Azure's silence-check feature) and return the matching
+ * ASIN set, uppercased to align with BookSync's `book.id` convention.
+ */
+export const azureFetchSilentBookAsins = async (
+  dbService: DatabaseService,
+  config: AzureConfig,
+): Promise<Set<string>> => {
+  const baseUrl = stripTrailingSlash(config.url)
+  const pageSize = 100
+  const collected = new Set<string>()
+  let page = 0
+  let total = 0
+
+  do {
+    const data = await withAzureAuth(dbService, config, async (token) => {
+      const res = await axios.get<AzureLibraryListResponse>(`${baseUrl}/api/library`, {
+        params: {
+          libraryId: config.libraryId,
+          audioStatus: 'silent',
+          page,
+          limit: pageSize,
+        },
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 60000,
+      })
+      return res.data
+    })
+
+    const results = Array.isArray(data) ? data : (data.results ?? [])
+    total = Array.isArray(data) ? results.length : (data.total ?? results.length)
+
+    for (const book of results) {
+      if (book.asin) collected.add(book.asin.toUpperCase())
+    }
+
+    if (Array.isArray(data)) break
+    if (results.length < pageSize) break
+    page++
+  } while (collected.size < total)
+
+  return collected
+}
+
 /** POST a library scan request to the Azure admin endpoint. */
 export const azureTriggerScan = async (
   dbService: DatabaseService,

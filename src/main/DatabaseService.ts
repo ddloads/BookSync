@@ -67,6 +67,10 @@ export class DatabaseService {
           book.isInAbs = false;
           changed = true;
         }
+        if (typeof book.azureHasSilent !== 'boolean') {
+          book.azureHasSilent = false;
+          changed = true;
+        }
         if (book.lastAbsConfirmedAt === undefined) {
           book.lastAbsConfirmedAt = null;
           changed = true;
@@ -272,6 +276,24 @@ export class DatabaseService {
           book.isDownloaded = false;
           book.lastDownloadAt = null;
           book.nasPath = null;
+          update.run(JSON.stringify(book), row.id);
+        }
+      }
+    });
+
+    applyAll();
+  }
+
+  updateAzureSilentStatus(silentIds: Set<string>) {
+    const rows = this.db.prepare('SELECT id, data FROM books').all() as { id: string; data: string }[];
+    const update = this.db.prepare('UPDATE books SET data = ? WHERE id = ?');
+
+    const applyAll = this.db.transaction(() => {
+      for (const row of rows) {
+        const book = safeParseJSON(row.data, BookSchema, 'updateAzureSilentStatus') as any;
+        const isSilent = silentIds.has(row.id);
+        if (Boolean(book.azureHasSilent) !== isSilent) {
+          book.azureHasSilent = isSilent;
           update.run(JSON.stringify(book), row.id);
         }
       }
