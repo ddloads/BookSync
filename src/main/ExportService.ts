@@ -487,6 +487,15 @@ export class ExportService {
 
       try {
         await fs.promises.copyFile(sourcePath, stagedTargetPath);
+        // CIFS/SMB-backed volumes (common when /downloads points at a NAS share)
+        // return EACCES from rename when the destination already exists instead
+        // of silently overwriting. Unlink first so the rename always lands on a
+        // clean target.
+        try {
+          await fs.promises.unlink(targetPath);
+        } catch (unlinkErr: any) {
+          if (unlinkErr?.code !== 'ENOENT') throw unlinkErr;
+        }
         await fs.promises.rename(stagedTargetPath, targetPath);
         await fs.promises.unlink(sourcePath);
       } catch (copyErr) {
