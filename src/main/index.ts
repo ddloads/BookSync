@@ -822,6 +822,9 @@ function createWindow(): void {
     if (!nasPath) throw new Error('NAS Path not set in Settings.')
 
     const exportFormat = dbService.getSetting('exportFormat', 'm4b') as 'm4b' | 'mp3'
+    if (activeDownloads.has(bookId)) {
+      return { success: false, cancelled: false, error: 'Download already in progress' }
+    }
 
     // Set up cancellation
     const abortController = new AbortController()

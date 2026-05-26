@@ -7,6 +7,7 @@ import { useFilterStore } from './useFilterStore'
 
 // Module-level flags for queue processing
 let isProcessing = false
+let listenersRegistered = false
 const MAX_CONCURRENT = 3
 const activeDownloads = new Set<string>()
 
@@ -231,50 +232,52 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
       if (allDetails && Object.keys(allDetails).length > 0) set(s => ({ detailsCache: { ...s.detailsCache, ...allDetails } }))
       logClient('success', 'UI Library', `Loaded ${data.length} books`)
 
-      // --- IPC Listeners ---
+      if (!listenersRegistered) {
+        listenersRegistered = true
 
-      // Listen for remote download triggers
-      window.api.book.onDownloadRemote((bookId: string) => {
-        const book = get().books.find(b => b.id === bookId);
-        if (book) get().handleDownload(book);
-      });
+        // Listen for remote download triggers
+        window.api.book.onDownloadRemote((bookId: string) => {
+          const book = get().books.find(b => b.id === bookId)
+          if (book) get().handleDownload(book)
+        })
 
-      window.api.book.onDownloadManyRemote((bookIds: string[]) => {
-        get().addManyToQueue(bookIds);
-      });
+        window.api.book.onDownloadManyRemote((bookIds: string[]) => {
+          get().addManyToQueue(bookIds)
+        })
 
-      // Download progress
-      window.api.book.onDownloadProgress((data) => {
-        get().setDownloadPhase(data.bookId, data.phase);
-        get().setDownloadProgress(data.bookId, data.progress, data.speed);
-      });
+        // Download progress
+        window.api.book.onDownloadProgress((data) => {
+          get().setDownloadPhase(data.bookId, data.phase)
+          get().setDownloadProgress(data.bookId, data.progress, data.speed)
+        })
 
-      // Library sync progress
-      window.api.library.onSyncProgress((data) => {
-        set({ syncProgress: data });
-      });
+        // Library sync progress
+        window.api.library.onSyncProgress((data) => {
+          set({ syncProgress: data })
+        })
 
-      // NAS scan progress
-      window.api.library.onScanProgress((data) => {
-        set({ scanProgress: data });
-      });
+        // NAS scan progress
+        window.api.library.onScanProgress((data) => {
+          set({ scanProgress: data })
+        })
 
-      // Metadata enrichment
-      window.api.library.onEnrichProgress((data) => {
-        set({ enrichProgress: { completed: data.completed, total: data.total } });
-        if (data.details) {
-          get().setDetailsCache(data.bookId, data.details);
-        }
-      });
+        // Metadata enrichment
+        window.api.library.onEnrichProgress((data) => {
+          set({ enrichProgress: { completed: data.completed, total: data.total } })
+          if (data.details) {
+            get().setDetailsCache(data.bookId, data.details)
+          }
+        })
 
-      window.api.library.onEnrichComplete(() => {
-        set({ enrichProgress: null });
-      });
+        window.api.library.onEnrichComplete(() => {
+          set({ enrichProgress: null })
+        })
 
-      // Remote data changes
-      window.api.library.onRemoteChanged(() => {
-        get().loadLibrary();
-      });
+        // Remote data changes
+        window.api.library.onRemoteChanged(() => {
+          get().loadLibrary()
+        })
+      }
 
     } catch { /* empty on first launch */ }
   },
@@ -651,8 +654,13 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
   addManyToQueue: (bookIds: string[]) => {
     const { queue, books } = get()
     const activeIds = new Set(queue.filter(q => q.status === 'queued' || q.status === 'downloading' || q.status === 'converting').map(q => q.bookId))
+    const seenIds = new Set<string>()
     const newItems: QueueItem[] = bookIds
-      .filter(id => !activeIds.has(id))
+      .filter(id => {
+        if (activeIds.has(id) || seenIds.has(id)) return false
+        seenIds.add(id)
+        return true
+      })
       .map(bookId => ({ bookId, status: 'queued' as const, progress: 0, addedAt: Date.now() }))
     if (newItems.length === 0) {
       notifyInfo('All selected books are already in queue', { duration: 1500 })

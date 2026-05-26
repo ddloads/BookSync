@@ -311,6 +311,9 @@ async function downloadBookAction(bookId: string) {
   const account = dbService.getAccount(accountId)
   if (!account) throw new Error(`Account not found for this book (ID: ${accountId})`)
   const nasPath = getNasPath()
+  if (activeDownloads.has(bookId)) {
+    return { success: false, cancelled: false, error: 'Download already in progress' }
+  }
 
   const abortController = new AbortController()
   activeDownloads.set(bookId, { abortController, ffmpegProcess: null })
