@@ -251,6 +251,45 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
           get().setDownloadProgress(data.bookId, data.progress, data.speed)
         })
 
+        window.api.book.onDownloadFailed((data) => {
+          const book = get().books.find(b => b.id === data.bookId)
+          activeDownloads.delete(data.bookId)
+
+          set(s => {
+            const nextIds = new Set(s.downloadingIds)
+            nextIds.delete(data.bookId)
+            const nextProgress = { ...s.downloadProgress }
+            delete nextProgress[data.bookId]
+            const nextSpeed = { ...s.downloadSpeed }
+            delete nextSpeed[data.bookId]
+            const nextPhase = { ...s.downloadPhase }
+            delete nextPhase[data.bookId]
+
+            return {
+              queue: data.cancelled
+                ? s.queue.filter(q => q.bookId !== data.bookId)
+                : s.queue.map(q =>
+                    q.bookId === data.bookId ? { ...q, status: 'failed' as const, error: data.error || 'Download failed' } : q
+                  ),
+              downloadingIds: nextIds,
+              downloadProgress: nextProgress,
+              downloadSpeed: nextSpeed,
+              downloadPhase: nextPhase
+            }
+          })
+
+          if (!data.cancelled) {
+            const msg = data.error || 'Download failed'
+            notifyError(`${book?.title || 'Book'}: ${msg}`, {
+              activityTitle: 'Download Failed',
+              activityDescription: `${book?.title || data.bookId}: ${msg}`
+            })
+            logClient('error', 'UI Queue', `Download failed for ${data.bookId}: ${msg}`)
+          }
+
+          get().processQueue()
+        })
+
         // Library sync progress
         window.api.library.onSyncProgress((data) => {
           set({ syncProgress: data })
@@ -274,7 +313,39 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
         })
 
         // Remote data changes
-        window.api.library.onRemoteChanged(() => {
+        window.api.library.onRemoteChanged((data: any) => {
+          if (data?.source === 'download' && data?.bookId) {
+            const bookId = String(data.bookId)
+            const completedAt = new Date().toISOString()
+            activeDownloads.delete(bookId)
+            set(s => {
+              const nextIds = new Set(s.downloadingIds)
+              nextIds.delete(bookId)
+              const nextProgress = { ...s.downloadProgress }
+              delete nextProgress[bookId]
+              const nextSpeed = { ...s.downloadSpeed }
+              delete nextSpeed[bookId]
+              const nextPhase = { ...s.downloadPhase }
+              delete nextPhase[bookId]
+
+              return {
+                queue: s.queue.map(q =>
+                  q.bookId === bookId ? { ...q, status: 'completed' as const, progress: 100 } : q
+                ),
+                books: s.books.map(b =>
+                  b.id === bookId ? { ...b, isDownloaded: true, lastDownloadAt: completedAt } : b
+                ),
+                selectedBook: s.selectedBook?.id === bookId
+                  ? { ...s.selectedBook, isDownloaded: true, lastDownloadAt: completedAt }
+                  : s.selectedBook,
+                downloadingIds: nextIds,
+                downloadProgress: nextProgress,
+                downloadSpeed: nextSpeed,
+                downloadPhase: nextPhase
+              }
+            })
+            get().processQueue()
+          }
           get().loadLibrary()
         })
       }
@@ -792,8 +863,15 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
 
         // Trigger the actual download process (async, non-blocking)
         ;(async () => {
+          let detached = false
           try {
             const result = await window.api.book.download(nextItem.bookId)
+            if (result.accepted) {
+              detached = true
+              logClient('info', 'UI Queue', `Download accepted for background processing: ${nextItem.bookId}`)
+              return
+            }
+
             if (!result.success) {
               const isCancelled = result.cancelled === true
               if (isCancelled) {
@@ -841,17 +919,19 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
               logClient('error', 'UI Queue', `Download failed for ${nextItem.bookId}: ${msg}`)
             }
           } finally {
-            activeDownloads.delete(nextItem.bookId)
-            // Clean up downloadingIds and downloadPhase
-            set(s => {
-              const nextIds = new Set(s.downloadingIds)
-              nextIds.delete(nextItem.bookId)
-              const nextProgress = { ...s.downloadProgress }
-              delete nextProgress[nextItem.bookId]
-              const nextPhase = { ...s.downloadPhase }
-              delete nextPhase[nextItem.bookId]
-              return { downloadingIds: nextIds, downloadProgress: nextProgress, downloadPhase: nextPhase }
-            })
+            if (!detached) {
+              activeDownloads.delete(nextItem.bookId)
+              // Clean up downloadingIds and downloadPhase
+              set(s => {
+                const nextIds = new Set(s.downloadingIds)
+                nextIds.delete(nextItem.bookId)
+                const nextProgress = { ...s.downloadProgress }
+                delete nextProgress[nextItem.bookId]
+                const nextPhase = { ...s.downloadPhase }
+                delete nextPhase[nextItem.bookId]
+                return { downloadingIds: nextIds, downloadProgress: nextProgress, downloadPhase: nextPhase }
+              })
+            }
             // Continue processing the queue
             isProcessing = false
             get().processQueue()

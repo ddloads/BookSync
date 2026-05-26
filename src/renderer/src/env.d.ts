@@ -31,16 +31,17 @@ export interface IElectronAPI {
     onScanProgress: (callback: (data: { current: number; total: number; filename: string; source?: string }) => void) => () => void
     onEnrichProgress: (callback: (data: { completed: number; total: number; bookId: string; details: any }) => void) => () => void
     onEnrichComplete: (callback: (data: { total: number }) => void) => () => void
-    onRemoteChanged: (callback: () => void) => () => void
+    onRemoteChanged: (callback: (data?: any) => void) => () => void
   }
   book: {
-    download: (bookId: string) => Promise<{ success: boolean; cancelled?: boolean; error?: string }>
+    download: (bookId: string) => Promise<{ success: boolean; cancelled?: boolean; error?: string; accepted?: boolean }>
     rescan: (bookId: string) => Promise<any>
     rescanMany: (bookIds: string[]) => Promise<any[]>
     cancelDownload: (bookId: string) => Promise<{ cancelled: boolean }>
     getDetails: (bookId: string) => Promise<any>
     toggleIgnore: (bookId: string) => Promise<boolean>
     onDownloadProgress: (callback: (data: { bookId: string; progress: number; speed?: number; phase: 'download' | 'convert' }) => void) => () => void
+    onDownloadFailed: (callback: (data: { bookId: string; error?: string; cancelled?: boolean }) => void) => () => void
     onDownloadRemote: (callback: (bookId: string) => void) => () => void
     onDownloadManyRemote: (callback: (bookIds: string[]) => void) => () => void
   }

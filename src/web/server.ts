@@ -371,10 +371,12 @@ async function downloadBookAction(bookId: string) {
   } catch (err: any) {
     if (isCancellationError(err)) {
       appLog('info', 'Download Cancelled', `"${book.title}" was cancelled.`)
+      broadcast('book:download-failed', { bookId, cancelled: true })
       return { success: false, cancelled: true }
     }
     const message = formatError(err)
     appLog('error', 'Download Failed', `"${book.title}" (${book.id}): ${message}`)
+    broadcast('book:download-failed', { bookId, error: message })
     throw err
   } finally {
     activeDownloads.delete(bookId)
@@ -382,6 +384,20 @@ async function downloadBookAction(bookId: string) {
     maybeTriggerPendingAzureScan()
   }
   return { success: true, cancelled: false }
+}
+
+function startDownloadBookAction(bookId: string) {
+  const book = dbService.getBooks().find((candidate) => candidate.id === bookId)
+  if (!book) throw new Error('Book not found in database.')
+  if (activeDownloads.has(bookId)) {
+    return { success: false, cancelled: false, error: 'Download already in progress' }
+  }
+
+  void downloadBookAction(bookId).catch(() => {
+    // downloadBookAction already logs and broadcasts the failure.
+  })
+
+  return { success: true, cancelled: false, accepted: true }
 }
 
 async function rescanBook(bookId: string) {
@@ -475,7 +491,7 @@ const rpcHandlers: Record<string, (...args: any[]) => any> = {
     }
     return true
   },
-  'book:download': downloadBookAction,
+  'book:download': startDownloadBookAction,
   'book:rescan': rescanBook,
   'book:rescan-many': rescanMany,
   'book:cancel-download': (bookId: string) => {

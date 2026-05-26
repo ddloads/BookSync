@@ -59,6 +59,11 @@ contextBridge.exposeInMainWorld('api', {
       ipcRenderer.on('book:download-progress', listener)
       return () => ipcRenderer.removeListener('book:download-progress', listener)
     },
+    onDownloadFailed: (callback: (data: { bookId: string; error?: string; cancelled?: boolean }) => void) => {
+      const listener = (_event: any, data: any) => callback(data)
+      ipcRenderer.on('book:download-failed', listener)
+      return () => ipcRenderer.removeListener('book:download-failed', listener)
+    },
     onDownloadRemote: (callback: (bookId: string) => void) => {
       const listener = (_event: any, bookId: string) => callback(bookId)
       ipcRenderer.on('book:download-remote', listener)

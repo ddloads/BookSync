@@ -156,7 +156,7 @@ function connectEvents() {
       emit(message.type, message.data)
       if (message.type === 'book:download-remote') emit('book:download-remote', message.data)
       if (message.type === 'book:download-many-remote') emit('book:download-many-remote', message.data)
-      if (message.type === 'library:updated') emit('library:remote-changed', null)
+      if (message.type === 'library:updated') emit('library:remote-changed', message.data)
     } catch {
       // Ignore malformed event frames.
     }
@@ -228,6 +228,7 @@ if (!window.api) {
       getDetails: (bookId: string) => rpc('book:details', bookId),
       toggleIgnore: (bookId: string) => rpc('book:toggle-ignore', bookId),
       onDownloadProgress: (callback) => on('book:download-progress', callback),
+      onDownloadFailed: (callback) => on('book:download-failed', callback),
       onDownloadRemote: (callback) => on('book:download-remote', callback),
       onDownloadManyRemote: (callback) => on('book:download-many-remote', callback),
     },
