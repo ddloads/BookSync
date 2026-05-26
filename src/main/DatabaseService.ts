@@ -359,11 +359,16 @@ export class DatabaseService {
 
   // --- Logs ---
   addLog(type: 'success' | 'error' | 'info', title: string, message: string) {
-    this.db.prepare('INSERT INTO logs (type, title, message) VALUES (?, ?, ?)').run(type, title, message);
+    this.db.prepare('INSERT INTO logs (type, title, message, timestamp) VALUES (?, ?, ?, ?)').run(
+      type,
+      title,
+      message,
+      new Date().toISOString(),
+    );
   }
 
   getLogs(limit: number = 1000): LogEntry[] {
-    return this.db.prepare('SELECT * FROM logs ORDER BY timestamp DESC LIMIT ?').all(limit) as LogEntry[];
+    return this.db.prepare('SELECT * FROM logs ORDER BY id DESC LIMIT ?').all(limit) as LogEntry[];
   }
 
   clearLogs() {

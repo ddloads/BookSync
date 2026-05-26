@@ -288,7 +288,7 @@ async function syncAudibleAction() {
   emitSyncProgress(completeData)
   serverService?.broadcast('library:sync-progress', completeData)
 
-  dbService.addLog('success', 'Audible Sync Complete', `Retrieved ${totalBooks} titles from ${accounts.length} accounts.`)
+  appLog('success', 'Audible Sync Complete', `Retrieved ${totalBooks} titles from ${accounts.length} accounts.`)
   
   // Notify mobile devices
   serverService?.broadcast('library:updated', { source: 'audible' })
@@ -906,7 +906,7 @@ function createWindow(): void {
       )
 
       dbService.updateBookStatus(book.id, true, finalPath)
-      dbService.addLog('success', 'Download Complete', `"${book.title}" has been successfully exported to your NAS.`)
+      appLog('success', 'Download Complete', `"${book.title}" has been successfully exported to your NAS.`)
       serverService?.broadcast('library:updated', { source: 'download', bookId: book.id })
 
       // 3. Trigger Azure scan if configured
