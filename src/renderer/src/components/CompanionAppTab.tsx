@@ -3,6 +3,8 @@ import QRCode from 'qrcode'
 import { Save, Shield, Globe, Copy, Check, Smartphone, Wifi } from 'lucide-react'
 import { notifyError, notifySuccess } from '../stores/useNotificationStore'
 
+const DEFAULT_MOBILE_PUBLIC_URL = 'https://booksync.ddsplayground.com'
+
 type MobileConnectionInfo = {
   enabled: boolean
   port: number
@@ -18,7 +20,7 @@ type MobileConnectionInfo = {
 export function CompanionAppTab() {
   const [enabled, setEnabled] = useState(false)
   const [port, setPort] = useState('3000')
-  const [publicUrl, setPublicUrl] = useState('')
+  const [publicUrl, setPublicUrl] = useState(DEFAULT_MOBILE_PUBLIC_URL)
   const [apiKey, setApiKey] = useState('')
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
@@ -71,7 +73,7 @@ export function CompanionAppTab() {
 
       setEnabled(e === 'true')
       setPort(p)
-      setPublicUrl(pub)
+      setPublicUrl(pub || DEFAULT_MOBILE_PUBLIC_URL)
       setApiKey(info.apiKey)
       setConnectionInfo(info)
     } catch (err) {
@@ -85,7 +87,7 @@ export function CompanionAppTab() {
     try {
       await window.api.settings.set('mobileServerEnabled', String(enabled))
       await window.api.settings.set('mobileServerPort', port)
-      await window.api.settings.set('mobileServerPublicUrl', publicUrl)
+      await window.api.settings.set('mobileServerPublicUrl', (publicUrl.trim() || DEFAULT_MOBILE_PUBLIC_URL).replace(/\/+$/, ''))
       await window.api.settings.restartServer()
 
       const info = await window.api.settings.getMobileConnectionInfo()

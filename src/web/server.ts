@@ -28,6 +28,7 @@ import { getAppPath, getAppVersion, getUserDataPath } from '../main/runtime'
 const PORT = Number(process.env.PORT || 3000)
 const ABS_RECENT_DOWNLOAD_GRACE_MS = 30 * 60 * 1000
 const AZURE_SCAN_DEBOUNCE_MS = 5000
+const DEFAULT_MOBILE_PUBLIC_URL = 'https://booksync.ddsplayground.com'
 
 const audibleService = new AudibleService()
 const dbService = new DatabaseService()
@@ -127,7 +128,7 @@ function getAzureConfig(): AzureConfig | null {
 function getCompanionConnectionInfo() {
   const enabled = true
   const port = Number(process.env.PORT || dbService.getSetting('mobileServerPort', String(PORT)) || PORT)
-  const publicUrl = dbService.getSetting('mobileServerPublicUrl', '').replace(/\/+$/, '')
+  const publicUrl = (dbService.getSetting('mobileServerPublicUrl', DEFAULT_MOBILE_PUBLIC_URL).trim() || DEFAULT_MOBILE_PUBLIC_URL).replace(/\/+$/, '')
   const apiKey = ensureCompanionApiKey()
   const hosts = Object.values(os.networkInterfaces())
     .flatMap((addresses) => addresses ?? [])

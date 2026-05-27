@@ -448,7 +448,7 @@ function getCompanionConnectionInfo() {
   const enabled = dbService.getSetting('mobileServerEnabled', 'false') === 'true'
   const defaultPort = process.env.PORT || '3005'
   const port = parseInt(dbService.getSetting('mobileServerPort', defaultPort), 10) || parseInt(defaultPort, 10)
-  const publicUrl = dbService.getSetting('mobileServerPublicUrl', '').replace(/\/+$/, '')
+  const publicUrl = (dbService.getSetting('mobileServerPublicUrl', DEFAULT_MOBILE_PUBLIC_URL).trim() || DEFAULT_MOBILE_PUBLIC_URL).replace(/\/+$/, '')
   const apiKey = ensureCompanionApiKey()
   const interfaces = os.networkInterfaces()
   const hosts = Object.values(interfaces)
@@ -458,7 +458,8 @@ function getCompanionConnectionInfo() {
     .filter((value, index, array) => array.indexOf(value) === index)
 
   const primaryHost = hosts[0] ?? '127.0.0.1'
-  const httpUrl = `http://${primaryHost}:${port}`
+  const lanUrl = `http://${primaryHost}:${port}`
+  const httpUrl = publicUrl || lanUrl
   const wsUrl = `ws://${primaryHost}:${port}?apiKey=${encodeURIComponent(apiKey)}`
   
   // Build v2 QR payload with both local and public endpoints
@@ -574,6 +575,7 @@ function shouldBroadcastProgress(bookId: string, progress: number, phase: string
 }
 
 const ABS_RECENT_DOWNLOAD_GRACE_MS = 30 * 60 * 1000
+const DEFAULT_MOBILE_PUBLIC_URL = 'https://booksync.ddsplayground.com'
 let pendingAzureScanConfig: AzureConfig | null = null
 
 function hasCompleteBookDetails(details: any): boolean {
