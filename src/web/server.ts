@@ -136,7 +136,7 @@ function getCompanionConnectionInfo() {
     .map((address) => address.address)
     .filter((value, index, array) => array.indexOf(value) === index)
   const primaryHost = hosts[0] ?? '127.0.0.1'
-  const httpUrl = publicUrl || `http://${primaryHost}:${port}`
+  const httpUrl = `http://${primaryHost}:${port}`
   const wsUrl = httpUrl.replace(/^http/, 'ws') + `?apiKey=${encodeURIComponent(apiKey)}`
   const qrParams = new URLSearchParams({ version: '2', apiKey, local: httpUrl })
   if (publicUrl) qrParams.set('public', publicUrl)

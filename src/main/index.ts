@@ -446,7 +446,7 @@ function ensureCompanionApiKey(): string {
 
 function getCompanionConnectionInfo() {
   const enabled = dbService.getSetting('mobileServerEnabled', 'false') === 'true'
-  const defaultPort = process.env.PORT || '3005'
+  const defaultPort = process.env.PORT || '3000'
   const port = parseInt(dbService.getSetting('mobileServerPort', defaultPort), 10) || parseInt(defaultPort, 10)
   const publicUrl = (dbService.getSetting('mobileServerPublicUrl', DEFAULT_MOBILE_PUBLIC_URL).trim() || DEFAULT_MOBILE_PUBLIC_URL).replace(/\/+$/, '')
   const apiKey = ensureCompanionApiKey()
@@ -459,14 +459,14 @@ function getCompanionConnectionInfo() {
 
   const primaryHost = hosts[0] ?? '127.0.0.1'
   const lanUrl = `http://${primaryHost}:${port}`
-  const httpUrl = publicUrl || lanUrl
+  const httpUrl = lanUrl
   const wsUrl = `ws://${primaryHost}:${port}?apiKey=${encodeURIComponent(apiKey)}`
   
   // Build v2 QR payload with both local and public endpoints
   const qrParams = new URLSearchParams({
     version: '2',
     apiKey: apiKey,
-    local: httpUrl,
+    local: lanUrl,
   })
   if (publicUrl) {
     qrParams.set('public', publicUrl)
