@@ -49,7 +49,7 @@ const pendingAzureScanFolders = new Set<string>()
 
 const app = express()
 const server = createServer(app)
-const wss = new WebSocketServer({ server, path: '/api/events' })
+const wss = new WebSocketServer({ server })
 
 app.use(express.json({ limit: '2mb' }))
 
@@ -567,6 +567,156 @@ const rpcHandlers: Record<string, (...args: any[]) => any> = {
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', version: getAppVersion(), mode: 'web' })
+})
+
+function requireMobileAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const apiKey = ensureCompanionApiKey()
+  if (req.headers.authorization !== `Bearer ${apiKey}`) {
+    res.status(401).json({ error: 'Unauthorized' })
+    return
+  }
+  next()
+}
+
+function getMobileBooks() {
+  const allDetails = dbService.getAllBookDetails()
+  return dbService.getBooks().map((book) => {
+    const details = allDetails[book.id]
+    return {
+      ...book,
+      categories: details?.categories || [],
+      publisher: details?.publisher || book.publisher || null,
+      narrator: book.narrator || null,
+    }
+  })
+}
+
+app.get('/api/status', requireMobileAuth, (_req, res) => {
+  res.json({ status: 'ok', version: getAppVersion(), mode: 'web' })
+})
+
+app.get('/api/books', requireMobileAuth, (_req, res) => {
+  res.json(getMobileBooks())
+})
+
+app.get('/api/books/:id/details', requireMobileAuth, async (req, res) => {
+  try {
+    res.json(await rpcHandlers['book:details'](req.params.id))
+  } catch (err) {
+    res.status(500).json({ error: formatError(err) })
+  }
+})
+
+app.get('/api/downloads/status', requireMobileAuth, (_req, res) => {
+  res.json(companionQueueSnapshot)
+})
+
+app.get('/api/logs', requireMobileAuth, (req, res) => {
+  const limit = Number(req.query.limit || 100)
+  res.json(dbService.getLogs(Number.isFinite(limit) ? limit : 100))
+})
+
+app.delete('/api/logs', requireMobileAuth, (_req, res) => {
+  dbService.clearLogs()
+  res.json({ success: true })
+})
+
+app.get('/api/settings', requireMobileAuth, (_req, res) => {
+  const settings = dbService.getAllSettings().map((setting) => {
+    if (setting.key.toLowerCase().includes('apikey') || setting.key.toLowerCase().includes('password')) {
+      return { ...setting, value: '[REDACTED]' }
+    }
+    return setting
+  })
+  res.json(settings)
+})
+
+app.post('/api/settings', requireMobileAuth, (req, res) => {
+  const { key, value } = req.body ?? {}
+  if (!key) {
+    res.status(400).json({ error: 'Setting key is required' })
+    return
+  }
+  dbService.setSetting(String(key), String(value ?? ''))
+  res.json({ success: true })
+})
+
+app.get('/api/accounts', requireMobileAuth, (_req, res) => {
+  res.json(dbService.getAccounts())
+})
+
+app.post('/api/actions/sync-audible', requireMobileAuth, async (_req, res) => {
+  try {
+    res.json({ success: true, data: await syncAudibleAction() })
+  } catch (err) {
+    res.status(500).json({ error: formatError(err) })
+  }
+})
+
+app.post('/api/actions/scan-nas', requireMobileAuth, async (_req, res) => {
+  try {
+    res.json({ success: true, data: await scanNasAction() })
+  } catch (err) {
+    res.status(500).json({ error: formatError(err) })
+  }
+})
+
+app.post('/api/actions/scan-azure', requireMobileAuth, async (_req, res) => {
+  try {
+    res.json({ success: true, data: await scanAzureAction() })
+  } catch (err) {
+    res.status(500).json({ error: formatError(err) })
+  }
+})
+
+app.post('/api/actions/scan-abs', requireMobileAuth, async (_req, res) => {
+  try {
+    res.json({ success: true, data: await scanAzureAction() })
+  } catch (err) {
+    res.status(500).json({ error: formatError(err) })
+  }
+})
+
+app.post('/api/actions/download/:id', requireMobileAuth, (req, res) => {
+  try {
+    res.json(startDownloadBookAction(req.params.id))
+  } catch (err) {
+    res.status(500).json({ error: formatError(err) })
+  }
+})
+
+app.post('/api/actions/download-bulk', requireMobileAuth, (req, res) => {
+  const bookIds = req.body?.bookIds
+  if (!Array.isArray(bookIds)) {
+    res.status(400).json({ error: 'bookIds must be an array' })
+    return
+  }
+  for (const bookId of bookIds) {
+    startDownloadBookAction(String(bookId))
+  }
+  res.json({ success: true, count: bookIds.length })
+})
+
+app.delete('/api/actions/download/:id', requireMobileAuth, (req, res) => {
+  res.json(rpcHandlers['book:cancel-download'](req.params.id))
+})
+
+app.post('/api/books/:id/toggle-ignore', requireMobileAuth, (req, res) => {
+  try {
+    const isIgnored = rpcHandlers['book:toggle-ignore'](req.params.id)
+    res.json({ success: true, isIgnored })
+  } catch (err) {
+    res.status(500).json({ error: formatError(err) })
+  }
+})
+
+app.delete('/api/accounts/:id', requireMobileAuth, (req, res) => {
+  try {
+    dbService.deleteAccount(req.params.id)
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: formatError(err) })
+  }
 })
 
 app.get('/api/books/:id/audio', (req, res) => {
