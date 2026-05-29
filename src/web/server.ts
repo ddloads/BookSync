@@ -292,11 +292,11 @@ async function scanNasAction(onProgress?: (data: any) => void) {
   return dbService.getBooks()
 }
 
-async function scanAzureAction() {
+async function scanAzureAction(progressSource: 'azure' | 'abs' = 'azure') {
   const config = getAzureConfig()
   if (!config) throw new Error('Azure server not configured in Settings.')
   const azureItems = await azureFetchLibraryItems(dbService, config, (current, total) => {
-    broadcast('library:scan-progress', { current, total: total || 1, filename: `Fetching items (${current}/${total})...`, source: 'azure' })
+    broadcast('library:scan-progress', { current, total: total || 1, filename: `Fetching items (${current}/${total})...`, source: progressSource })
   })
   const allBooks = dbService.getBooks()
   const decision = decideAbsMatches(allBooks, azureItems as AbsLibraryItem[], { recentDownloadGraceMs: ABS_RECENT_DOWNLOAD_GRACE_MS })
@@ -309,7 +309,7 @@ async function scanAzureAction() {
     appLog('error', 'Azure Sync', `Silent-files fetch failed: ${describeAzureError(err, 'silent-files fetch')}`)
   }
 
-  broadcast('library:updated', { source: 'azure' })
+  broadcast('library:updated', { source: progressSource })
   return dbService.getBooks()
 }
 
@@ -671,7 +671,7 @@ app.post('/api/actions/scan-azure', requireMobileAuth, async (_req, res) => {
 
 app.post('/api/actions/scan-abs', requireMobileAuth, async (_req, res) => {
   try {
-    res.json({ success: true, data: await scanAzureAction() })
+    res.json({ success: true, data: await scanAzureAction('abs') })
   } catch (err) {
     res.status(500).json({ error: formatError(err) })
   }
