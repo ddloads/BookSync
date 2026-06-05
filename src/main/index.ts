@@ -11,6 +11,7 @@ import { ScanService } from './ScanService'
 import { ServerService } from './ServerService'
 import { AaxCache } from './AaxCache'
 import { AbsLibraryItem, decideAbsMatches } from './absSync'
+import { buildDownloadPreparation } from './downloadPreparation'
 import {
   AzureConfig,
   azureFetchLibraryItems,
@@ -844,23 +845,18 @@ function createWindow(): void {
 
     try {
       appLog('info', 'Download', `Fetching download URL and activation bytes for ${book.title}`)
-      
-      // 1. Get download URL and activation bytes and book details concurrently
-      const [downloadUrlObj, activationBytes, details] = await Promise.all([
+
+      // 1. Get the download URL/details first; only fetch activation bytes for legacy AAX titles.
+      const [downloadUrlObj, details] = await Promise.all([
         audibleService.getDownloadUrl(account.auth_data, book.id),
-        audibleService.getActivationBytes(account.auth_data),
         Promise.resolve(dbService.getBookDetails(book.id)).then(cached =>
           cached ?? audibleService.getBookDetails(account.auth_data, book.id).catch(() => null)
         )
-      ]);
-      
-      const downloadUrl = downloadUrlObj.download_url
-      if (!downloadUrl) throw new Error('Failed to retrieve download URL from Audible.')
+      ])
 
-      const audibleVoucher = downloadUrlObj.voucher
-        ? { key: String(downloadUrlObj.voucher.key), iv: String(downloadUrlObj.voucher.iv) }
-        : null
-      const audibleFormat = (downloadUrlObj.format === 'aaxc' ? 'aaxc' : 'aax') as 'aax' | 'aaxc'
+      const { downloadUrl, audibleFormat, audibleVoucher, requiresActivationBytes } = buildDownloadPreparation({ downloadUrlObj })
+      const activationBytes = requiresActivationBytes ? await audibleService.getActivationBytes(account.auth_data) : ''
+      const exportFormat = dbService.getSetting('exportFormat', 'm4b') as 'm4b' | 'mp3'
 
       const finalPath = await exportService.downloadAndConvertStream(
         downloadUrl,

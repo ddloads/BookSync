@@ -8,7 +8,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "build:web": "vite build --config vite.web.config.ts && vite build --config vite.server.config.ts",
-    "build:python": "python -m venv src/main/python/venv && .\\src\\main\\python\\venv\\Scripts\\pip install audible audible-cli pyinstaller && .\\src\\main\\python\\venv\\Scripts\\pyinstaller --onefile --distpath resources src/main/python/audible_wrapper.py",
+    "build:python": "python -m venv src/main/python/venv && .\\src\\main\\python\\venv\\Scripts\\pip install audible==0.8.2 audible-cli==0.3.2 httpx==0.27.0 pyinstaller && .\\src\\main\\python\\venv\\Scripts\\pyinstaller --onefile --distpath resources src/main/python/audible_wrapper.py",
     "preview": "electron-vite preview",
     "start": "electron-vite preview",
     "start:web": "node dist-web/server/index.cjs",
