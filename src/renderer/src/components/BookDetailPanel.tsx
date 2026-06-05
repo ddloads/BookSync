@@ -112,10 +112,10 @@ export function BookDetailPanel() {
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-500" onClick={() => setSelectedBook(null)} />
-      <div className="relative w-full md:max-w-2xl bg-[#0f172a] shadow-3xl h-full flex flex-col animate-in slide-in-from-right duration-500 border-l border-slate-800/60">
+      <div className="relative flex h-full w-full flex-col border-l border-slate-800/60 bg-[#0f172a] shadow-3xl animate-in slide-in-from-right duration-500 md:max-w-2xl">
         <button
           onClick={() => setSelectedBook(null)}
-          className="absolute top-4 left-4 lg:top-8 lg:left-8 p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white transition-all duration-300 border border-white/[0.03] z-10"
+          className="absolute left-4 top-4 z-10 rounded-2xl border border-white/[0.03] bg-white/[0.03] p-2.5 text-slate-400 transition-all duration-300 hover:bg-white/[0.08] hover:text-white lg:left-8 lg:top-8 lg:p-3"
         >
           <X size={20} />
         </button>
@@ -132,7 +132,7 @@ export function BookDetailPanel() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/20 to-transparent" />
           </div>
 
-          <div className="px-6 md:px-10 -mt-16 md:-mt-20 relative space-y-8 pb-10">
+          <div className="relative -mt-12 space-y-6 px-4 pb-10 sm:px-6 md:-mt-20 md:space-y-8 md:px-10">
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2">
                 {book.isDownloaded ? (
@@ -160,7 +160,7 @@ export function BookDetailPanel() {
                   </span>
                 )}
               </div>
-              <h2 className="text-3xl font-black text-white leading-tight tracking-tight">{book.title}</h2>
+              <h2 className="text-2xl font-black leading-tight tracking-tight text-white sm:text-3xl">{book.title}</h2>
               <div className="flex flex-wrap gap-2">
                 {authors.map(author => (
                   <FilterActionButton key={author} label={author} onClick={() => applyLibraryFilter(() => toggleAuthor(author))} accent="amber" />
@@ -182,7 +182,7 @@ export function BookDetailPanel() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <DetailCard label="Narrated By">
                 {narrators.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
@@ -239,8 +239,8 @@ export function BookDetailPanel() {
               {details?.language && <DetailCard label="Language" value={details.language} />}
               <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:border-amber-500/10 transition-colors">
                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 block mb-1.5">ASIN</span>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <code className="text-[13px] font-mono text-slate-300 font-bold">{book.id}</code>
+                <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                  <code className="break-all text-[13px] font-mono font-bold text-slate-300">{book.id}</code>
                   <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(book.id); notifySuccess('ASIN copied', { duration: 1500 }) }} className="p-1 hover:bg-white/5 rounded text-slate-600 hover:text-slate-400 transition-colors">
                     <Copy size={12} />
                   </button>
@@ -255,7 +255,7 @@ export function BookDetailPanel() {
               )}
               {effectiveSeriesSequence && <DetailCard label="Series Position" value={`Book ${effectiveSeriesSequence}`} />}
               {details?.copyright && (
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:border-amber-500/10 transition-colors col-span-2">
+                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-4 transition-colors hover:border-amber-500/10 sm:col-span-2">
                   <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 block mb-1.5">Copyright</span>
                   <span className="text-[12px] font-medium text-slate-500">{details.copyright}</span>
                 </div>
@@ -275,7 +275,7 @@ export function BookDetailPanel() {
 
             {book.isDownloaded && nasFilePath && (
               <div className={`p-4 rounded-2xl border ${isNonStandardPath ? 'bg-amber-500/[0.03] border-amber-500/20' : 'bg-emerald-500/[0.03] border-emerald-500/10'}`}>
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className={`text-[9px] font-black uppercase tracking-widest block ${isNonStandardPath ? 'text-amber-500/70' : 'text-emerald-500/70'}`}>
                     {isNonStandardPath ? 'Non-standard NAS Path' : 'Standard NAS Path'}
                   </span>
@@ -283,11 +283,11 @@ export function BookDetailPanel() {
                     <span className="text-[8px] font-black bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded-full uppercase tracking-tighter">Renamed or Moved</span>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <code className={`text-[11px] font-mono flex-1 break-all leading-relaxed ${isNonStandardPath ? 'text-amber-400/80' : 'text-emerald-400/80'}`}>{nasFilePath}</code>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <code className={`flex-1 break-all text-[11px] font-mono leading-relaxed ${isNonStandardPath ? 'text-amber-400/80' : 'text-emerald-400/80'}`}>{nasFilePath}</code>
                   <button
                     onClick={() => { navigator.clipboard.writeText(nasFilePath); notifySuccess('Path copied to clipboard', { duration: 1500 }) }}
-                    className={`p-2 rounded-xl transition-all shrink-0 ${isNonStandardPath ? 'hover:bg-amber-500/10 text-amber-500/50 hover:text-amber-400' : 'hover:bg-emerald-500/10 text-emerald-500/50 hover:text-emerald-400'}`}
+                    className={`shrink-0 self-start rounded-xl p-2 transition-all sm:self-auto ${isNonStandardPath ? 'text-amber-500/50 hover:bg-amber-500/10 hover:text-amber-400' : 'text-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-400'}`}
                   >
                     <Copy size={14} />
                   </button>

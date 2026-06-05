@@ -162,16 +162,16 @@ const LibraryGridItem = memo(function LibraryGridItem({
         {/* Selection Checkbox */}
         <div 
           onClick={(e) => { e.stopPropagation(); toggleSelection(book.id) }}
-          className={`absolute top-3 right-3 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 z-30 ${
+          className={`absolute top-3 right-3 z-30 flex h-6 w-6 items-center justify-center rounded-lg border-2 transition-all duration-300 ${
             isSelected 
               ? 'bg-amber-500 border-amber-500 text-black scale-110 shadow-lg' 
-              : 'bg-black/40 border-white/20 text-transparent opacity-0 group-hover:opacity-100 hover:border-white/40'
+              : 'bg-black/40 border-white/20 text-transparent opacity-100 hover:border-white/40 sm:opacity-0 sm:group-hover:opacity-100'
           }`}
         >
           <CheckCircle2 size={14} className={isSelected ? 'opacity-100' : 'opacity-0'} />
         </div>
 
-        <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+        <div className="absolute left-3 top-3 z-20 opacity-100 transition-opacity duration-300 sm:opacity-0 sm:group-hover:opacity-100">
           <div className="relative" ref={menuRef}>
             <button
               onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu) }}
@@ -200,7 +200,7 @@ const LibraryGridItem = memo(function LibraryGridItem({
         </div>
 
         {!isDownloading && !isQueued && (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center p-4">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 opacity-100 transition-all duration-500 sm:opacity-0 sm:group-hover:opacity-100">
             <div className="mt-auto w-full flex gap-2">
               <button
                 onClick={e => { e.stopPropagation(); handleDownload(book) }}

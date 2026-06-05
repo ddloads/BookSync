@@ -82,7 +82,7 @@ function App() {
   }, [activeTab, filteredBooks.length])
 
   return (
-    <div className="flex h-screen bg-[#020617] text-slate-200 font-sans selection:bg-amber-500/30 overflow-hidden">
+    <div className="flex h-screen flex-col overflow-hidden bg-[#020617] font-sans text-slate-200 selection:bg-amber-500/30 lg:flex-row">
       <Toaster 
         theme="dark" 
         position="bottom-right" 
@@ -102,7 +102,7 @@ function App() {
 
       <div className="flex-1 flex flex-col relative min-w-0">
         {/* Top Floating Info */}
-        <div className="absolute top-6 right-8 flex items-center gap-4 z-40">
+        <div className="absolute right-4 top-4 z-40 hidden items-center gap-4 sm:flex lg:right-8 lg:top-6">
           {unreadNotifications > 0 && (
             <button
               onClick={(e) => { e.stopPropagation(); useNotificationStore.getState().toggleShowNotifications() }}
@@ -125,26 +125,26 @@ function App() {
 
         <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative custom-scrollbar">
           {activeTab === 'library' && (
-            <div className="p-4 md:p-8 lg:p-10">
+            <div className="p-4 pb-28 sm:pb-8 md:p-8 lg:p-10">
               {/* Header */}
-              <header className="mb-8 lg:mb-10 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+              <header className="mb-8 flex flex-col justify-between gap-5 lg:mb-10 xl:flex-row xl:items-end">
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-8 bg-amber-500 rounded-full" />
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white flex items-baseline gap-4">
+                    <h1 className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-3xl font-black tracking-tight text-white sm:text-4xl md:text-5xl">
                       Library
-                      <span className="text-xl md:text-2xl font-bold text-slate-700 tabular-nums">
+                      <span className="text-lg font-bold tabular-nums text-slate-700 sm:text-xl md:text-2xl">
                         {books.length}
                       </span>
                     </h1>
                   </div>
-                  <p className="text-slate-500 font-medium text-sm md:text-base ml-5">Manage and sync your audiobook collection</p>
+                  <p className="ml-5 max-w-2xl text-sm font-medium text-slate-500 md:text-base">Manage and sync your audiobook collection</p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start xl:justify-end">
                   <button
                     onClick={() => setShowFilterPanel(!showFilterPanel)}
-                    className={`relative flex items-center gap-3 px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${showFilterPanel ? 'bg-amber-500 text-black shadow-xl shadow-amber-500/20' : 'bg-[#0f172a]/60 border border-slate-800/50 text-slate-300 hover:bg-[#0f172a] hover:border-slate-700'}`}
+                    className={`relative flex w-full items-center justify-center gap-3 rounded-2xl px-6 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all sm:w-auto ${showFilterPanel ? 'bg-amber-500 text-black shadow-xl shadow-amber-500/20' : 'bg-[#0f172a]/60 border border-slate-800/50 text-slate-300 hover:bg-[#0f172a] hover:border-slate-700'}`}
                   >
                     <SlidersHorizontal size={16} />
                     Filters
@@ -157,7 +157,7 @@ function App() {
                   
                   <button
                     onClick={toggleQueuePanel}
-                    className={`flex items-center gap-3 px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${showQueuePanel ? 'bg-amber-500 text-black shadow-xl shadow-amber-500/20' : 'bg-[#0f172a]/60 border border-slate-800/50 text-slate-300 hover:bg-[#0f172a] hover:border-slate-700'}`}
+                    className={`flex w-full items-center justify-center gap-3 rounded-2xl px-6 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all sm:w-auto ${showQueuePanel ? 'bg-amber-500 text-black shadow-xl shadow-amber-500/20' : 'bg-[#0f172a]/60 border border-slate-800/50 text-slate-300 hover:bg-[#0f172a] hover:border-slate-700'}`}
                   >
                     <RefreshCw size={16} className={useLibraryStore.getState().downloadingIds.size > 0 ? 'animate-spin' : ''} />
                     Queue
@@ -180,7 +180,7 @@ function App() {
                       <LibraryList books={filteredBooks} scrollContainerRef={mainScrollRef} />
                     )
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-32 bg-[#0f172a]/20 rounded-[3rem] border border-dashed border-slate-800/50">
+                    <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-slate-800/50 bg-[#0f172a]/20 px-6 py-20 sm:rounded-[3rem] sm:py-32">
                       <div className="p-8 bg-slate-900/50 rounded-full mb-6">
                         <Search size={48} className="text-slate-700" />
                       </div>
@@ -209,7 +209,7 @@ function App() {
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setShowFilterPanel(false)}
             />
-            <div className="absolute right-0 top-0 h-full w-[min(100vw-1rem,44rem)] p-3 md:p-4">
+            <div className="absolute right-0 top-0 h-full w-full p-2 sm:w-[min(100vw-1rem,44rem)] sm:p-3 md:p-4">
               <FilterPanel />
             </div>
           </div>
@@ -220,7 +220,7 @@ function App() {
         {showScrollTop && (
           <button
             onClick={scrollToTop}
-            className="fixed bottom-10 right-10 p-4 bg-amber-500 text-black rounded-2xl shadow-2xl shadow-amber-500/20 hover:bg-amber-400 hover:-translate-y-1 transition-all z-40 active:scale-95"
+            className="fixed bottom-24 right-4 z-40 rounded-2xl bg-amber-500 p-3 text-black shadow-2xl shadow-amber-500/20 transition-all hover:bg-amber-400 active:scale-95 sm:bottom-10 sm:right-10 sm:p-4 sm:hover:-translate-y-1"
           >
             <ArrowUp size={24} />
           </button>

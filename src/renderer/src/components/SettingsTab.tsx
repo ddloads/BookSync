@@ -94,7 +94,7 @@ export function SettingsTab() {
   }
 
   return (
-    <div className="p-4 md:p-8 lg:p-10 max-w-5xl h-full flex flex-col">
+    <div className="flex h-full max-w-5xl flex-col p-4 pb-24 md:p-8 lg:p-10">
       <div className="mb-8">
         <h2 className="text-3xl lg:text-4xl font-black text-white tracking-tight mb-2">Settings</h2>
         <p className="text-slate-500 font-bold">Manage your accounts, storage, and integrations.</p>
@@ -123,10 +123,10 @@ export function SettingsTab() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-4 -mr-4 space-y-8 scrollbar-thin scrollbar-thumb-slate-800">
+      <div className="-mr-2 flex-1 space-y-8 overflow-y-auto pr-2 md:-mr-4 md:pr-4 scrollbar-thin scrollbar-thumb-slate-800">
         {subTab === 'accounts' && (
           <section className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="bg-[#0f172a]/40 p-8 rounded-[2rem] border border-slate-800/60 backdrop-blur-xl space-y-8">
+            <div className="space-y-8 rounded-[2rem] border border-slate-800/60 bg-[#0f172a]/40 p-5 backdrop-blur-xl sm:p-6 md:p-8">
               <div className="space-y-2">
                 <h3 className="text-xl font-black text-white">Audible Accounts</h3>
                 <p className="text-xs text-slate-500 font-bold">Connect multiple profiles from any Audible marketplace.</p>
@@ -137,8 +137,8 @@ export function SettingsTab() {
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Connected Profiles</label>
                   <div className="grid gap-3">
                     {accounts.map((acc: any) => (
-                      <div key={acc.id} className="flex items-center justify-between p-5 rounded-2xl bg-white/[0.03] border border-white/[0.05] group hover:border-amber-500/20 transition-all">
-                        <div className="flex items-center gap-4">
+                      <div key={acc.id} className="group flex flex-col gap-4 rounded-2xl border border-white/[0.05] bg-white/[0.03] p-5 transition-all hover:border-amber-500/20 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 items-center gap-4">
                           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 font-black text-sm border border-amber-500/10">
                             {acc.region.toUpperCase()}
                           </div>
@@ -201,7 +201,7 @@ export function SettingsTab() {
 
         {subTab === 'general' && (
           <section className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="bg-[#0f172a]/40 p-8 rounded-[2rem] border border-slate-800/60 backdrop-blur-xl space-y-8">
+            <div className="space-y-8 rounded-[2rem] border border-slate-800/60 bg-[#0f172a]/40 p-5 backdrop-blur-xl sm:p-6 md:p-8">
               <div className="space-y-2">
                 <h3 className="text-xl font-black text-white">General Configuration</h3>
                 <p className="text-xs text-slate-500 font-bold">Manage storage paths and application behavior.</p>
@@ -259,7 +259,7 @@ export function SettingsTab() {
 
                 <div className="space-y-3">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Default Format</label>
-                  <div className="flex gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {[
                       { id: 'm4b', label: 'M4B (Lossless Copy)', desc: 'Original AAC stream, fast, chapters supported.' },
                       { id: 'mp3', label: 'MP3 (High Quality VBR)', desc: 'Re-encoded, universal compatibility.' }
@@ -345,7 +345,7 @@ export function SettingsTab() {
 
         {subTab === 'integrations' && (
           <section className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="bg-[#0f172a]/40 p-8 rounded-[2rem] border border-slate-800/60 backdrop-blur-xl space-y-8">
+            <div className="space-y-8 rounded-[2rem] border border-slate-800/60 bg-[#0f172a]/40 p-5 backdrop-blur-xl sm:p-6 md:p-8">
               <div className="space-y-2">
                 <h3 className="text-xl font-black text-white">Azure Server</h3>
                 <p className="text-xs text-slate-500 font-bold">Auto-trigger library scans after successful exports.</p>
@@ -401,7 +401,7 @@ export function SettingsTab() {
                 </div>
               </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                   <button
                     onClick={handleFetchAzureLibraries}
                     disabled={!azureUrl || !azureUsername || !azurePassword || azureLibrariesLoading}

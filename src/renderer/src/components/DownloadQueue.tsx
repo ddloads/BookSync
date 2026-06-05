@@ -63,7 +63,7 @@ export function DownloadQueue() {
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-500">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
             {queuedCount > 0 && <span>{queuedCount} queued</span>}
             {activeCount > 0 && <span className="text-amber-500">{activeCount} active</span>}
             {completedCount > 0 && <span className="text-emerald-500">{completedCount} done</span>}

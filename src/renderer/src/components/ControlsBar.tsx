@@ -36,13 +36,13 @@ export function ControlsBar({ totalCount, currentCount, filteredBookIds }: { tot
   }
 
   return (
-    <div className="flex flex-col gap-5 mb-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-3">
+    <div className="mb-8 flex flex-col gap-5">
+      <div className="flex flex-col justify-between gap-5 xl:flex-row xl:items-center">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between xl:justify-start">
           {/* Selection Toggle */}
           <button
             onClick={handleToggleSelectAll}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+            className={`flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all sm:w-auto ${
               allSelected 
                 ? 'bg-amber-500 border-amber-500 text-black shadow-lg shadow-amber-500/20' 
                 : someSelected
@@ -54,25 +54,25 @@ export function ControlsBar({ totalCount, currentCount, filteredBookIds }: { tot
             {allSelected ? 'All Selected' : someSelected ? `${selectedIds.size} Selected` : 'Select All'}
           </button>
 
-          <div className="h-8 w-px bg-white/5 mx-1" />
+          <div className="mx-1 hidden h-8 w-px bg-white/5 sm:block" />
 
-          <div className="flex bg-black/20 p-1 rounded-2xl border border-white/[0.03]">
+          <div className="flex w-full rounded-2xl border border-white/[0.03] bg-black/20 p-1 sm:w-auto">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white/10 text-white shadow-lg shadow-black/20' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 rounded-xl p-2.5 transition-all sm:flex-none ${viewMode === 'grid' ? 'bg-white/10 text-white shadow-lg shadow-black/20' : 'text-slate-500 hover:text-slate-300'}`}
             >
               <LayoutGrid size={18} />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white/10 text-white shadow-lg shadow-black/20' : 'text-slate-500 hover:text-slate-300'}`}
+              className={`flex-1 rounded-xl p-2.5 transition-all sm:flex-none ${viewMode === 'list' ? 'bg-white/10 text-white shadow-lg shadow-black/20' : 'text-slate-500 hover:text-slate-300'}`}
             >
               <List size={18} />
             </button>
           </div>
         </div>
 
-        <div className="flex flex-1 max-w-2xl relative group">
+        <div className="relative flex w-full flex-1 group xl:max-w-2xl">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-amber-500 transition-colors">
             <Search size={18} />
           </div>
@@ -93,15 +93,15 @@ export function ControlsBar({ totalCount, currentCount, filteredBookIds }: { tot
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center xl:justify-end">
           {/* Main Sort */}
-          <div className="relative group/sort">
+          <div className="relative group/sort w-full sm:w-auto">
             <button
               onClick={() => {
                 setShowSecondarySortMenu(false)
                 setShowSortMenu(!showSortMenu)
               }}
-              className="flex items-center gap-3 bg-[#0f172a]/40 border border-slate-800/50 hover:border-slate-700 rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-300 transition-all hover:bg-[#0f172a]/60 active:scale-95"
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-800/50 bg-[#0f172a]/40 px-5 py-3 text-[11px] font-black uppercase tracking-widest text-slate-300 transition-all hover:border-slate-700 hover:bg-[#0f172a]/60 active:scale-95 sm:w-auto sm:justify-start"
             >
               <SlidersHorizontal size={14} className="text-amber-500" />
               <span>{SORT_OPTIONS.find(o => o.value === sortBy)?.label}</span>
@@ -109,7 +109,7 @@ export function ControlsBar({ totalCount, currentCount, filteredBookIds }: { tot
             </button>
 
             {showSortMenu && (
-              <div className="absolute top-full right-0 mt-3 w-56 bg-[#0f172a] backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full right-0 z-50 mt-3 w-full rounded-2xl border border-white/10 bg-[#0f172a] py-2 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200 sm:w-56">
                 <div className="px-4 py-2 mb-1 border-b border-white/5">
                   <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Sort By</span>
                 </div>
@@ -130,30 +130,31 @@ export function ControlsBar({ totalCount, currentCount, filteredBookIds }: { tot
             )}
           </div>
 
-          <button
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="p-3 bg-[#0f172a]/40 border border-slate-800/50 hover:border-slate-700 rounded-2xl text-slate-500 hover:text-amber-500 transition-all"
-          >
-            {sortOrder === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
-          </button>
-
-          <div className="h-8 w-px bg-white/5 mx-1" />
-
-          {/* Secondary Sort Toggle */}
-          <div className="relative group/sort">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
-              onClick={() => {
-                setShowSortMenu(false)
-                setShowSecondarySortMenu(!showSecondarySortMenu)
-              }}
-              className={`flex items-center gap-3 bg-[#0f172a]/40 border border-slate-800/50 hover:border-slate-700 rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-widest transition-all hover:bg-[#0f172a]/60 active:scale-95 ${secondarySortBy ? 'text-amber-400 border-amber-500/20' : 'text-slate-500'}`}
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="rounded-2xl border border-slate-800/50 bg-[#0f172a]/40 p-3 text-slate-500 transition-all hover:border-slate-700 hover:text-amber-500"
             >
-              <span>{secondarySortBy ? SORT_OPTIONS.find(o => o.value === secondarySortBy)?.label : 'Sub-Sort'}</span>
-              <ChevronDown size={14} className={`transition-transform duration-300 ${showSecondarySortMenu ? 'rotate-180' : ''}`} />
+              {sortOrder === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
             </button>
 
-            {showSecondarySortMenu && (
-              <div className="absolute top-full right-0 mt-3 w-56 bg-[#0f172a] backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="hidden h-8 w-px bg-white/5 sm:block" />
+
+            {/* Secondary Sort Toggle */}
+            <div className="relative group/sort flex-1 sm:flex-none">
+              <button
+                onClick={() => {
+                  setShowSortMenu(false)
+                  setShowSecondarySortMenu(!showSecondarySortMenu)
+                }}
+                className={`flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-800/50 bg-[#0f172a]/40 px-5 py-3 text-[11px] font-black uppercase tracking-widest transition-all hover:border-slate-700 hover:bg-[#0f172a]/60 active:scale-95 sm:w-auto sm:justify-start ${secondarySortBy ? 'border-amber-500/20 text-amber-400' : 'text-slate-500'}`}
+              >
+                <span>{secondarySortBy ? SORT_OPTIONS.find(o => o.value === secondarySortBy)?.label : 'Sub-Sort'}</span>
+                <ChevronDown size={14} className={`transition-transform duration-300 ${showSecondarySortMenu ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showSecondarySortMenu && (
+                <div className="absolute top-full right-0 z-50 mt-3 w-full rounded-2xl border border-white/10 bg-[#0f172a] py-2 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200 sm:w-56">
                 <div className="px-4 py-2 mb-1 border-b border-white/5 flex items-center justify-between">
                   <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Secondary Sort</span>
                   {secondarySortBy && (
@@ -178,18 +179,19 @@ export function ControlsBar({ totalCount, currentCount, filteredBookIds }: { tot
                     {secondarySortBy === option.value && <Check size={14} />}
                   </button>
                 ))}
-              </div>
+                </div>
+              )}
+            </div>
+
+            {secondarySortBy && (
+              <button
+                onClick={() => setSecondarySortOrder(secondarySortOrder === 'asc' ? 'desc' : 'asc')}
+                className="rounded-2xl border border-slate-800/50 bg-[#0f172a]/40 p-3 text-slate-500 transition-all hover:border-slate-700 hover:text-amber-500"
+              >
+                {secondarySortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+              </button>
             )}
           </div>
-
-          {secondarySortBy && (
-            <button
-              onClick={() => setSecondarySortOrder(secondarySortOrder === 'asc' ? 'desc' : 'asc')}
-              className="p-3 bg-[#0f172a]/40 border border-slate-800/50 hover:border-slate-700 rounded-2xl text-slate-500 hover:text-amber-500 transition-all"
-            >
-              {secondarySortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-            </button>
-          )}
         </div>
       </div>
     </div>

@@ -41,124 +41,126 @@ export function Sidebar() {
   }
 
   return (
-    <aside className={`w-20 ${collapsed ? 'lg:w-20' : 'lg:w-64'} shrink-0 border-r border-slate-800/40 bg-[#0f172a]/40 backdrop-blur-xl p-4 lg:p-6 flex flex-col z-10 shadow-2xl transition-all duration-300`}>
-      <div className={`flex items-center gap-3 mb-10 px-1 group cursor-default ${collapsed ? 'justify-center' : ''}`}>
-        <div className="bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-2 lg:p-2.5 rounded-xl lg:rounded-2xl shadow-xl shadow-amber-500/10 group-hover:shadow-amber-500/20 transition-all duration-500 group-hover:scale-110">
-          <BookOpen className="text-white w-5 h-5 lg:w-6 lg:h-6" />
+    <aside className={`z-10 shrink-0 border-b border-slate-800/40 bg-[#0f172a]/85 p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r ${collapsed ? 'lg:w-20' : 'lg:w-64'} lg:bg-[#0f172a]/40 lg:p-6`}>
+      <div className="flex flex-col gap-4 lg:flex-1 lg:gap-0">
+        <div className={`flex items-center gap-3 px-1 group cursor-default ${collapsed ? 'lg:justify-center' : ''}`}>
+          <div className="rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-2 shadow-xl shadow-amber-500/10 transition-all duration-500 group-hover:scale-110 group-hover:shadow-amber-500/20 lg:rounded-2xl lg:p-2.5">
+            <BookOpen className="h-5 w-5 text-white lg:h-6 lg:w-6" />
+          </div>
+          <div className={`min-w-0 ${collapsed ? 'lg:hidden' : ''}`}>
+            <h1 className="truncate text-lg font-black leading-none tracking-tight text-white lg:text-xl">BookSync</h1>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/70">Premium</span>
+          </div>
+          <button
+            onClick={toggleCollapsed}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="ml-auto hidden items-center justify-center rounded-xl p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-white lg:flex"
+          >
+            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
-        <div className={collapsed ? 'hidden' : 'hidden lg:block'}>
-          <h1 className="text-xl font-black tracking-tight text-white leading-none mb-1">BookSync</h1>
-          <span className="text-[10px] text-amber-500/70 font-bold uppercase tracking-[0.2em]">Premium</span>
+
+        <nav className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:mt-10 lg:flex lg:flex-1 lg:flex-col lg:space-y-1.5 lg:gap-0">
+          <button
+            onClick={() => setActiveTab('library')}
+            title="My Library"
+            className={`flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-300 lg:justify-start ${
+              activeTab === 'library'
+                ? 'border border-amber-500/10 bg-amber-500/10 font-bold text-amber-400 shadow-sm shadow-amber-500/5'
+                : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+            }`}
+          >
+            <Library size={18} className={activeTab === 'library' ? 'animate-pulse' : ''} />
+            <span className={collapsed ? 'lg:hidden' : ''}>My Library</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            title="Settings"
+            className={`flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-300 lg:justify-start ${
+              activeTab === 'settings'
+                ? 'border border-amber-500/10 bg-amber-500/10 font-bold text-amber-400 shadow-sm shadow-amber-500/5'
+                : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+            }`}
+          >
+            <Settings size={18} />
+            <span className={collapsed ? 'lg:hidden' : ''}>Settings</span>
+          </button>
+        </nav>
+
+        <div className="grid grid-cols-1 gap-2 border-t border-slate-800/60 pt-4 sm:grid-cols-2 lg:mt-auto lg:grid-cols-1 lg:space-y-3 lg:gap-0 lg:pt-6">
+          <button
+            onClick={toggleShowNotifications}
+            title="Activity"
+            className="group relative flex w-full items-center justify-center gap-2.5 rounded-xl border border-white/[0.02] bg-white/[0.03] px-4 py-3 text-[13px] font-semibold text-slate-400 transition-all duration-300 hover:bg-white/[0.08] hover:text-slate-200"
+          >
+            <Bell size={16} className="transition-transform group-hover:rotate-12" />
+            <span className={collapsed ? 'lg:hidden' : ''}>Activity</span>
+            {notifications.length > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-white shadow-lg shadow-amber-500/40">
+                {notifications.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={toggleQueuePanel}
+            title="Downloads"
+            className="group relative flex w-full items-center justify-center gap-2.5 rounded-xl border border-white/[0.02] bg-white/[0.03] px-4 py-3 text-[13px] font-semibold text-slate-400 transition-all duration-300 hover:bg-white/[0.08] hover:text-slate-200"
+          >
+            <Download size={16} className="transition-transform group-hover:translate-y-0.5" />
+            <span className={collapsed ? 'lg:hidden' : ''}>Downloads</span>
+            {activeQueueCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-white shadow-lg shadow-amber-500/40 animate-pulse">
+                {activeQueueCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={handleSync}
+            disabled={isSyncing}
+            title="Sync Cloud"
+            className="sm:col-span-2 lg:col-span-1 flex w-full items-center justify-center gap-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 px-4 py-3 text-[13px] font-black text-[#020617] shadow-xl shadow-amber-500/10 transition-all duration-500 hover:from-amber-400 hover:to-amber-500 hover:shadow-amber-500/20 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95"
+          >
+            <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
+            <span className={collapsed ? 'lg:hidden' : ''}>SYNC CLOUD</span>
+          </button>
+
+          <button
+            onClick={handleScanAzure}
+            disabled={isScanning}
+            title="Sync Azure"
+            className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-sky-500/10 bg-sky-500/10 px-4 py-3 text-[13px] font-black text-sky-400 transition-all duration-300 hover:bg-sky-500/20 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95"
+          >
+            <Cloud size={16} className={isScanning ? 'animate-pulse' : ''} />
+            <span className={collapsed ? 'lg:hidden' : ''}>SYNC AZURE</span>
+          </button>
+
+          <button
+            onClick={handleScanNas}
+            disabled={isScanning}
+            title="Sync NAS"
+            className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-emerald-500/10 bg-emerald-500/10 px-4 py-3 text-[13px] font-black text-emerald-400 transition-all duration-300 hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95"
+          >
+            <HardDrive size={16} className={isScanning ? 'animate-pulse' : ''} />
+            <span className={collapsed ? 'lg:hidden' : ''}>SYNC NAS</span>
+          </button>
         </div>
-        <button
-          onClick={toggleCollapsed}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="ml-auto hidden lg:flex items-center justify-center p-2 rounded-xl text-slate-500 hover:text-white hover:bg-white/5 transition-colors"
-        >
-          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
-      </div>
-
-      <nav className="space-y-1.5 flex-1">
-        <button
-          onClick={() => setActiveTab('library')}
-          title="My Library"
-          className={`w-full flex items-center justify-center lg:justify-start gap-3.5 px-4 py-3 rounded-xl text-sm transition-all duration-300 ${
-            activeTab === 'library'
-              ? 'bg-amber-500/10 text-amber-400 font-bold shadow-sm shadow-amber-500/5 border border-amber-500/10'
-              : 'hover:bg-white/5 text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Library size={18} className={activeTab === 'library' ? 'animate-pulse' : ''} />
-          <span className={collapsed ? 'hidden' : 'hidden lg:block'}>My Library</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('settings')}
-          title="Settings"
-          className={`w-full flex items-center justify-center lg:justify-start gap-3.5 px-4 py-3 rounded-xl text-sm transition-all duration-300 ${
-            activeTab === 'settings'
-              ? 'bg-amber-500/10 text-amber-400 font-bold shadow-sm shadow-amber-500/5 border border-amber-500/10'
-              : 'hover:bg-white/5 text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Settings size={18} />
-          <span className={collapsed ? 'hidden' : 'hidden lg:block'}>Settings</span>
-        </button>
-      </nav>
-
-      <div className="mt-auto pt-6 border-t border-slate-800/60 space-y-3">
-        <button
-          onClick={toggleShowNotifications}
-          title="Activity"
-          className="w-full bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-slate-200 text-[13px] font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all duration-300 border border-white/[0.02] relative group"
-        >
-          <Bell size={16} className="group-hover:rotate-12 transition-transform" />
-          <span className={collapsed ? 'hidden' : 'hidden lg:block'}>Activity</span>
-          {notifications.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-amber-500 text-[9px] text-white w-4.5 h-4.5 rounded-full flex items-center justify-center font-black shadow-lg shadow-amber-500/40">
-              {notifications.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={toggleQueuePanel}
-          title="Downloads"
-          className="w-full bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-slate-200 text-[13px] font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all duration-300 border border-white/[0.02] relative group"
-        >
-          <Download size={16} className="group-hover:translate-y-0.5 transition-transform" />
-          <span className={collapsed ? 'hidden' : 'hidden lg:block'}>Downloads</span>
-          {activeQueueCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-amber-500 text-[9px] text-white w-4.5 h-4.5 rounded-full flex items-center justify-center font-black shadow-lg shadow-amber-500/40 animate-pulse">
-              {activeQueueCount}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={handleSync}
-          disabled={isSyncing}
-          title="Sync Cloud"
-          className="w-full bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-50 disabled:cursor-not-allowed text-[#020617] text-[13px] font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all duration-500 shadow-xl shadow-amber-500/10 hover:shadow-amber-500/20 active:scale-95"
-        >
-          <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
-          <span className={collapsed ? 'hidden' : 'hidden lg:block'}>SYNC CLOUD</span>
-        </button>
-
-        <button
-          onClick={handleScanAzure}
-          disabled={isScanning}
-          title="Sync Azure"
-          className="w-full bg-sky-500/10 hover:bg-sky-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-sky-400 text-[13px] font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all duration-300 border border-sky-500/10 active:scale-95"
-        >
-          <Cloud size={16} className={isScanning ? 'animate-pulse' : ''} />
-          <span className={collapsed ? 'hidden' : 'hidden lg:block'}>SYNC AZURE</span>
-        </button>
-
-        <button
-          onClick={handleScanNas}
-          disabled={isScanning}
-          title="Sync NAS"
-          className="w-full bg-emerald-500/10 hover:bg-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-emerald-400 text-[13px] font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all duration-300 border border-emerald-500/10 active:scale-95"
-        >
-          <HardDrive size={16} className={isScanning ? 'animate-pulse' : ''} />
-          <span className={collapsed ? 'hidden' : 'hidden lg:block'}>SYNC NAS</span>
-        </button>
 
         {enrichProgress && (
-          <div className="mt-2 px-1 space-y-1.5">
-            <div className="flex justify-between items-center">
-              <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
+          <div className="mt-4 space-y-1.5 px-1 lg:mt-2">
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-500">
                 <RefreshCw size={9} className="animate-spin text-amber-500/60" />
-                <span className={collapsed ? 'hidden' : 'hidden lg:block'}>Fetching metadata</span>
+                <span className={collapsed ? 'lg:hidden' : ''}>Fetching metadata</span>
               </span>
-              <span className={`text-[9px] font-black text-slate-500 ${collapsed ? 'hidden' : 'hidden lg:block'}`}>
+              <span className={`text-[9px] font-black text-slate-500 ${collapsed ? 'lg:hidden' : ''}`}>
                 {enrichProgress.completed} / {enrichProgress.total}
               </span>
             </div>
-            <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-1 w-full overflow-hidden rounded-full bg-slate-800">
               <div
-                className="h-full bg-amber-500/40 rounded-full transition-all duration-300"
+                className="h-full rounded-full bg-amber-500/40 transition-all duration-300"
                 style={{ width: `${Math.round((enrichProgress.completed / enrichProgress.total) * 100)}%` }}
               />
             </div>
@@ -167,7 +169,7 @@ export function Sidebar() {
 
         {version && !collapsed && (
           <div className="px-1 pt-2 text-center lg:text-left">
-            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">
               v{version}
             </span>
           </div>
