@@ -110,18 +110,24 @@ export function BookDetailPanel() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-500" onClick={() => setSelectedBook(null)} />
-      <div className="relative flex h-full w-full flex-col border-l border-slate-800/60 bg-[#0f172a] shadow-3xl animate-in slide-in-from-right duration-500 md:max-w-2xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-end lg:items-stretch">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-sheet-fade lg:animate-in lg:fade-in lg:duration-500" onClick={() => setSelectedBook(null)} />
+      <div className="relative flex h-full max-h-[92dvh] w-full flex-col rounded-t-3xl border-t border-slate-800/60 bg-[#0f172a] shadow-3xl animate-sheet-up pb-safe lg:h-full lg:max-h-none lg:rounded-none lg:border-l lg:border-t-0 lg:pb-0 lg:animate-in lg:slide-in-from-right lg:duration-500 lg:max-w-2xl">
+        {/* Mobile drag handle */}
+        <div className="flex shrink-0 justify-center pt-3 pb-1 lg:hidden">
+          <div className="h-1.5 w-12 rounded-full bg-white/15" />
+        </div>
+
         <button
           onClick={() => setSelectedBook(null)}
-          className="absolute left-4 top-4 z-10 rounded-2xl border border-white/[0.03] bg-white/[0.03] p-2.5 text-slate-400 transition-all duration-300 hover:bg-white/[0.08] hover:text-white lg:left-8 lg:top-8 lg:p-3"
+          aria-label="Close"
+          className="absolute right-3 top-3 z-10 rounded-2xl border border-white/[0.03] bg-black/40 p-2.5 text-slate-300 backdrop-blur-md transition-all duration-300 hover:bg-white/[0.08] hover:text-white lg:left-8 lg:right-auto lg:top-8 lg:bg-white/[0.03] lg:p-3 lg:text-slate-400"
         >
           <X size={20} />
         </button>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="relative aspect-square md:aspect-[4/3] w-full overflow-hidden">
+          <div className="relative aspect-[16/10] sm:aspect-square md:aspect-[4/3] w-full overflow-hidden">
             {book.coverUrl ? (
               <img src={book.coverUrl} className="w-full h-full object-cover" />
             ) : (

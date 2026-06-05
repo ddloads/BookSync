@@ -37,11 +37,16 @@ export function DownloadQueue() {
   const missingCount = books.filter(b => !b.isDownloaded && !b.isIgnored).length
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-500" onClick={toggleQueuePanel} />
-      <div className="relative w-full md:max-w-sm bg-[#0f172a] shadow-3xl h-full flex flex-col animate-in slide-in-from-right duration-500 border-l border-slate-800/60">
+    <div className="fixed inset-0 z-50 flex items-end justify-end lg:items-stretch">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-sheet-fade lg:animate-in lg:fade-in lg:duration-500" onClick={toggleQueuePanel} />
+      <div className="relative flex h-full max-h-[88dvh] w-full flex-col rounded-t-3xl border-t border-slate-800/60 bg-[#0f172a] shadow-3xl animate-sheet-up pb-safe lg:h-full lg:max-h-none lg:max-w-sm lg:rounded-none lg:border-l lg:border-t-0 lg:pb-0 lg:animate-in lg:slide-in-from-right lg:duration-500">
+        {/* Mobile drag handle */}
+        <div className="flex shrink-0 justify-center pt-3 pb-1 lg:hidden">
+          <div className="h-1.5 w-12 rounded-full bg-white/15" />
+        </div>
+
         {/* Header */}
-        <div className="p-6 pb-4 border-b border-slate-800/60">
+        <div className="p-6 pt-4 pb-4 border-b border-slate-800/60 lg:pt-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-2.5">
               <Download size={18} className="text-amber-500" />
@@ -118,13 +123,6 @@ export function DownloadQueue() {
           )}
         </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.1); }
-      `}} />
     </div>
   )
 }

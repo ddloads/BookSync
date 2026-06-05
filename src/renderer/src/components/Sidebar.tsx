@@ -41,60 +41,60 @@ export function Sidebar() {
   }
 
   return (
-    <aside className={`z-10 shrink-0 border-b border-slate-800/40 bg-[#0f172a]/85 p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r ${collapsed ? 'lg:w-20' : 'lg:w-64'} lg:bg-[#0f172a]/40 lg:p-6`}>
-      <div className="flex flex-col gap-4 lg:flex-1 lg:gap-0">
-        <div className={`flex items-center gap-3 px-1 group cursor-default ${collapsed ? 'lg:justify-center' : ''}`}>
-          <div className="rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-2 shadow-xl shadow-amber-500/10 transition-all duration-500 group-hover:scale-110 group-hover:shadow-amber-500/20 lg:rounded-2xl lg:p-2.5">
-            <BookOpen className="h-5 w-5 text-white lg:h-6 lg:w-6" />
+    <aside className={`z-10 hidden h-screen shrink-0 flex-col border-r border-slate-800/40 bg-[#0f172a]/40 p-6 shadow-2xl backdrop-blur-xl transition-all duration-300 lg:flex ${collapsed ? 'lg:w-20' : 'lg:w-64'}`}>
+      <div className="flex flex-1 flex-col">
+        <div className={`flex items-center gap-3 px-1 group cursor-default ${collapsed ? 'justify-center' : ''}`}>
+          <div className="rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-2.5 shadow-xl shadow-amber-500/10 transition-all duration-500 group-hover:scale-110 group-hover:shadow-amber-500/20">
+            <BookOpen className="h-6 w-6 text-white" />
           </div>
-          <div className={`min-w-0 ${collapsed ? 'lg:hidden' : ''}`}>
-            <h1 className="truncate text-lg font-black leading-none tracking-tight text-white lg:text-xl">BookSync</h1>
+          <div className={`min-w-0 ${collapsed ? 'hidden' : ''}`}>
+            <h1 className="truncate text-xl font-black leading-none tracking-tight text-white">BookSync</h1>
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/70">Premium</span>
           </div>
           <button
             onClick={toggleCollapsed}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="ml-auto hidden items-center justify-center rounded-xl p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-white lg:flex"
+            className="ml-auto flex items-center justify-center rounded-xl p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-white"
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
         </div>
 
-        <nav className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:mt-10 lg:flex lg:flex-1 lg:flex-col lg:space-y-1.5 lg:gap-0">
+        <nav className="mt-10 flex flex-1 flex-col space-y-1.5">
           <button
             onClick={() => setActiveTab('library')}
             title="My Library"
-            className={`flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-300 lg:justify-start ${
+            className={`flex w-full items-center justify-start gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-300 ${
               activeTab === 'library'
                 ? 'border border-amber-500/10 bg-amber-500/10 font-bold text-amber-400 shadow-sm shadow-amber-500/5'
                 : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
             }`}
           >
             <Library size={18} className={activeTab === 'library' ? 'animate-pulse' : ''} />
-            <span className={collapsed ? 'lg:hidden' : ''}>My Library</span>
+            <span className={collapsed ? 'hidden' : ''}>My Library</span>
           </button>
           <button
             onClick={() => setActiveTab('settings')}
             title="Settings"
-            className={`flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-300 lg:justify-start ${
+            className={`flex w-full items-center justify-start gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-300 ${
               activeTab === 'settings'
                 ? 'border border-amber-500/10 bg-amber-500/10 font-bold text-amber-400 shadow-sm shadow-amber-500/5'
                 : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
             }`}
           >
             <Settings size={18} />
-            <span className={collapsed ? 'lg:hidden' : ''}>Settings</span>
+            <span className={collapsed ? 'hidden' : ''}>Settings</span>
           </button>
         </nav>
 
-        <div className="grid grid-cols-1 gap-2 border-t border-slate-800/60 pt-4 sm:grid-cols-2 lg:mt-auto lg:grid-cols-1 lg:space-y-3 lg:gap-0 lg:pt-6">
+        <div className="mt-auto space-y-3 border-t border-slate-800/60 pt-6">
           <button
             onClick={toggleShowNotifications}
             title="Activity"
             className="group relative flex w-full items-center justify-center gap-2.5 rounded-xl border border-white/[0.02] bg-white/[0.03] px-4 py-3 text-[13px] font-semibold text-slate-400 transition-all duration-300 hover:bg-white/[0.08] hover:text-slate-200"
           >
             <Bell size={16} className="transition-transform group-hover:rotate-12" />
-            <span className={collapsed ? 'lg:hidden' : ''}>Activity</span>
+            <span className={collapsed ? 'hidden' : ''}>Activity</span>
             {notifications.length > 0 && (
               <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-white shadow-lg shadow-amber-500/40">
                 {notifications.length}
@@ -108,7 +108,7 @@ export function Sidebar() {
             className="group relative flex w-full items-center justify-center gap-2.5 rounded-xl border border-white/[0.02] bg-white/[0.03] px-4 py-3 text-[13px] font-semibold text-slate-400 transition-all duration-300 hover:bg-white/[0.08] hover:text-slate-200"
           >
             <Download size={16} className="transition-transform group-hover:translate-y-0.5" />
-            <span className={collapsed ? 'lg:hidden' : ''}>Downloads</span>
+            <span className={collapsed ? 'hidden' : ''}>Downloads</span>
             {activeQueueCount > 0 && (
               <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-white shadow-lg shadow-amber-500/40 animate-pulse">
                 {activeQueueCount}
@@ -120,10 +120,10 @@ export function Sidebar() {
             onClick={handleSync}
             disabled={isSyncing}
             title="Sync Cloud"
-            className="sm:col-span-2 lg:col-span-1 flex w-full items-center justify-center gap-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 px-4 py-3 text-[13px] font-black text-[#020617] shadow-xl shadow-amber-500/10 transition-all duration-500 hover:from-amber-400 hover:to-amber-500 hover:shadow-amber-500/20 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95"
+            className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 px-4 py-3 text-[13px] font-black text-[#020617] shadow-xl shadow-amber-500/10 transition-all duration-500 hover:from-amber-400 hover:to-amber-500 hover:shadow-amber-500/20 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95"
           >
             <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
-            <span className={collapsed ? 'lg:hidden' : ''}>SYNC CLOUD</span>
+            <span className={collapsed ? 'hidden' : ''}>SYNC CLOUD</span>
           </button>
 
           <button
@@ -133,7 +133,7 @@ export function Sidebar() {
             className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-sky-500/10 bg-sky-500/10 px-4 py-3 text-[13px] font-black text-sky-400 transition-all duration-300 hover:bg-sky-500/20 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95"
           >
             <Cloud size={16} className={isScanning ? 'animate-pulse' : ''} />
-            <span className={collapsed ? 'lg:hidden' : ''}>SYNC AZURE</span>
+            <span className={collapsed ? 'hidden' : ''}>SYNC AZURE</span>
           </button>
 
           <button
@@ -143,18 +143,18 @@ export function Sidebar() {
             className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-emerald-500/10 bg-emerald-500/10 px-4 py-3 text-[13px] font-black text-emerald-400 transition-all duration-300 hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95"
           >
             <HardDrive size={16} className={isScanning ? 'animate-pulse' : ''} />
-            <span className={collapsed ? 'lg:hidden' : ''}>SYNC NAS</span>
+            <span className={collapsed ? 'hidden' : ''}>SYNC NAS</span>
           </button>
         </div>
 
         {enrichProgress && (
-          <div className="mt-4 space-y-1.5 px-1 lg:mt-2">
+          <div className="mt-2 space-y-1.5 px-1">
             <div className="flex items-center justify-between gap-3">
               <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-500">
                 <RefreshCw size={9} className="animate-spin text-amber-500/60" />
-                <span className={collapsed ? 'lg:hidden' : ''}>Fetching metadata</span>
+                <span className={collapsed ? 'hidden' : ''}>Fetching metadata</span>
               </span>
-              <span className={`text-[9px] font-black text-slate-500 ${collapsed ? 'lg:hidden' : ''}`}>
+              <span className={`text-[9px] font-black text-slate-500 ${collapsed ? 'hidden' : ''}`}>
                 {enrichProgress.completed} / {enrichProgress.total}
               </span>
             </div>
@@ -168,7 +168,7 @@ export function Sidebar() {
         )}
 
         {version && !collapsed && (
-          <div className="px-1 pt-2 text-center lg:text-left">
+          <div className="px-1 pt-2 text-left">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">
               v{version}
             </span>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Toaster } from 'sonner'
-import { CheckCircle2, Download, Filter, HardDrive, Library, LogIn, LogOut, RefreshCw, Search, ArrowUp, SlidersHorizontal } from 'lucide-react'
+import { ArrowUp, RefreshCw, Search, SlidersHorizontal } from 'lucide-react'
 import { useLibraryStore } from './stores/useLibraryStore'
 import { useFilterStore } from './stores/useFilterStore'
 import { useNotificationStore } from './stores/useNotificationStore'
@@ -16,7 +16,11 @@ import { LogsTab } from './components/LogsTab'
 import { CompanionAppTab } from './components/CompanionAppTab'
 import { NotificationCenter } from './components/NotificationCenter'
 import { DownloadQueue } from './components/DownloadQueue'
+import { MobileTopBar } from './components/MobileTopBar'
+import { MobileBottomNav } from './components/MobileBottomNav'
+import { MobileDrawer } from './components/MobileDrawer'
 import { useFilteredBooks } from './hooks/useFilteredBooks'
+import { useIsMobile } from './hooks/useIsMobile'
 
 function App() {
   const {
@@ -25,26 +29,25 @@ function App() {
     loadSettings,
     activeTab,
     selectedBook,
-    setSelectedBook,
     showQueuePanel,
     toggleQueuePanel
   } = useLibraryStore()
 
-  const {
-    showFilterPanel,
-    setShowFilterPanel,
-  } = useFilterStore()
+  const showFilterPanel = useFilterStore(s => s.showFilterPanel)
+  const setShowFilterPanel = useFilterStore(s => s.setShowFilterPanel)
+  const viewMode = useFilterStore(s => s.viewMode)
   const { filteredBooks, activeFilterCount } = useFilteredBooks()
 
   const {
-    notifications,
     showNotifications,
     hideNotifications,
     addNotification
   } = useNotificationStore()
 
+  const isMobile = useIsMobile()
   const mainScrollRef = useRef<HTMLDivElement>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   useEffect(() => {
     loadSettings()
@@ -72,22 +75,23 @@ function App() {
     mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const unreadNotifications = notifications.length
-
   const filteredBookIds = useMemo(() => filteredBooks.map(b => b.id), [filteredBooks])
 
   const pagePercent = useMemo(() => {
     if (activeTab !== 'library' || filteredBooks.length === 0) return 0
-    return 0 
+    return 0
   }, [activeTab, filteredBooks.length])
+
+  // On mobile, the list view's 800px-min table is unusable; force grid.
+  const effectiveViewMode = isMobile ? 'grid' : viewMode
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#020617] font-sans text-slate-200 selection:bg-amber-500/30 lg:flex-row">
-      <Toaster 
-        theme="dark" 
-        position="bottom-right" 
-        expand={true} 
-        richColors 
+      <Toaster
+        theme="dark"
+        position="bottom-right"
+        expand={true}
+        richColors
         toastOptions={{
           style: {
             background: 'rgba(15, 23, 42, 0.9)',
@@ -97,51 +101,51 @@ function App() {
           }
         }}
       />
-      
+
+      {/* Desktop sidebar (lg+) */}
       <Sidebar />
 
-      <div className="flex-1 flex flex-col relative min-w-0">
-        {/* Top Floating Info */}
-        <div className="absolute right-4 top-4 z-40 hidden items-center gap-4 sm:flex lg:right-8 lg:top-6">
-          {unreadNotifications > 0 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); useNotificationStore.getState().toggleShowNotifications() }}
-              className="relative p-2.5 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all group"
-            >
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 text-black text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#020617] animate-pulse">
-                {unreadNotifications}
-              </div>
-              <Filter size={18} className="text-slate-400 group-hover:text-white transition-colors" />
-            </button>
-          )}
-        </div>
+      {/* Mobile shell (<lg) */}
+      <MobileTopBar onOpenDrawer={() => setDrawerOpen(true)} />
+      <MobileBottomNav />
+      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
+      <div className="flex-1 flex flex-col relative min-w-0">
         {showNotifications && (
           <>
-            <div className="fixed inset-0 z-40" onClick={hideNotifications} />
+            <div
+              className="fixed inset-0 z-40 animate-sheet-fade bg-black/40 backdrop-blur-sm lg:bg-transparent lg:backdrop-blur-none"
+              onClick={hideNotifications}
+            />
             <NotificationCenter />
           </>
         )}
 
-        <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative custom-scrollbar">
+        <main
+          ref={mainScrollRef}
+          className="flex-1 overflow-y-auto relative custom-scrollbar mobile-shell-top mobile-shell-bottom lg:!pt-0 lg:!pb-0"
+        >
           {activeTab === 'library' && (
-            <div className="p-4 pb-28 sm:pb-8 md:p-8 lg:p-10">
+            <div className="px-4 pb-6 pt-4 md:p-8 lg:p-10">
               {/* Header */}
-              <header className="mb-8 flex flex-col justify-between gap-5 lg:mb-10 xl:flex-row xl:items-end">
+              <header className="mb-6 flex flex-col justify-between gap-5 lg:mb-10 xl:flex-row xl:items-end">
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-8 bg-amber-500 rounded-full" />
-                    <h1 className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-3xl font-black tracking-tight text-white sm:text-4xl md:text-5xl">
+                    <div className="hidden h-8 w-2 rounded-full bg-amber-500 sm:block" />
+                    <h1 className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-2xl font-black tracking-tight text-white sm:text-4xl md:text-5xl">
                       Library
-                      <span className="text-lg font-bold tabular-nums text-slate-700 sm:text-xl md:text-2xl">
+                      <span className="text-base font-bold tabular-nums text-slate-700 sm:text-xl md:text-2xl">
                         {books.length}
                       </span>
                     </h1>
                   </div>
-                  <p className="ml-5 max-w-2xl text-sm font-medium text-slate-500 md:text-base">Manage and sync your audiobook collection</p>
+                  <p className="ml-0 hidden max-w-2xl text-sm font-medium text-slate-500 sm:ml-5 sm:block md:text-base">
+                    Manage and sync your audiobook collection
+                  </p>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start xl:justify-end">
+                {/* Desktop-only quick actions (mobile/tablet uses ControlsBar + bottom nav) */}
+                <div className="hidden gap-3 lg:flex lg:flex-row lg:flex-wrap lg:items-center lg:justify-start xl:justify-end">
                   <button
                     onClick={() => setShowFilterPanel(!showFilterPanel)}
                     className={`relative flex w-full items-center justify-center gap-3 rounded-2xl px-6 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all sm:w-auto ${showFilterPanel ? 'bg-amber-500 text-black shadow-xl shadow-amber-500/20' : 'bg-[#0f172a]/60 border border-slate-800/50 text-slate-300 hover:bg-[#0f172a] hover:border-slate-700'}`}
@@ -154,7 +158,7 @@ function App() {
                       </span>
                     )}
                   </button>
-                  
+
                   <button
                     onClick={toggleQueuePanel}
                     className={`flex w-full items-center justify-center gap-3 rounded-2xl px-6 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all sm:w-auto ${showQueuePanel ? 'bg-amber-500 text-black shadow-xl shadow-amber-500/20' : 'bg-[#0f172a]/60 border border-slate-800/50 text-slate-300 hover:bg-[#0f172a] hover:border-slate-700'}`}
@@ -167,14 +171,15 @@ function App() {
 
               <div className="flex flex-col gap-8">
                 <div className="flex-1 min-w-0">
-                  <ControlsBar 
-                    totalCount={books.length} 
-                    currentCount={filteredBooks.length} 
+                  <ControlsBar
+                    totalCount={books.length}
+                    currentCount={filteredBooks.length}
                     filteredBookIds={filteredBookIds}
+                    activeFilterCount={activeFilterCount}
                   />
 
                   {filteredBooks.length > 0 ? (
-                    useFilterStore.getState().viewMode === 'grid' ? (
+                    effectiveViewMode === 'grid' ? (
                       <LibraryGrid books={filteredBooks} scrollContainerRef={mainScrollRef} />
                     ) : (
                       <LibraryList books={filteredBooks} scrollContainerRef={mainScrollRef} />
@@ -204,12 +209,12 @@ function App() {
         {selectedBook && <BookDetailPanel />}
         {showQueuePanel && <DownloadQueue />}
         {showFilterPanel && (
-          <div className="fixed inset-0 z-50">
+          <div className="fixed inset-0 z-50 flex items-end justify-end lg:items-stretch">
             <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-sheet-fade"
               onClick={() => setShowFilterPanel(false)}
             />
-            <div className="absolute right-0 top-0 h-full w-full p-2 sm:w-[min(100vw-1rem,44rem)] sm:p-3 md:p-4">
+            <div className="relative w-full max-h-[92dvh] animate-sheet-up lg:h-full lg:max-h-none lg:w-[min(100vw-1rem,44rem)] lg:animate-none lg:p-3 lg:pl-0 lg:pr-3 lg:pt-3">
               <FilterPanel />
             </div>
           </div>
@@ -220,7 +225,8 @@ function App() {
         {showScrollTop && (
           <button
             onClick={scrollToTop}
-            className="fixed bottom-24 right-4 z-40 rounded-2xl bg-amber-500 p-3 text-black shadow-2xl shadow-amber-500/20 transition-all hover:bg-amber-400 active:scale-95 sm:bottom-10 sm:right-10 sm:p-4 sm:hover:-translate-y-1"
+            aria-label="Scroll to top"
+            className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-30 rounded-2xl bg-amber-500 p-3 text-black shadow-2xl shadow-amber-500/20 transition-all hover:bg-amber-400 active:scale-95 lg:bottom-10 lg:right-10 lg:p-4 lg:hover:-translate-y-1"
           >
             <ArrowUp size={24} />
           </button>

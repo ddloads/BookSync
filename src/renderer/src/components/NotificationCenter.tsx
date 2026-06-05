@@ -7,7 +7,11 @@ export function NotificationCenter() {
   const clearNotifications = useNotificationStore(s => s.clearNotifications)
 
   return (
-    <div className="fixed left-4 lg:left-72 bottom-6 w-[calc(100vw-2rem)] md:w-85 max-h-[550px] bg-[#0f172a] border border-slate-800/80 rounded-3xl shadow-3xl z-50 flex flex-col overflow-hidden animate-in slide-in-from-left-8 fade-in duration-300 backdrop-blur-2xl">
+    <div className="fixed inset-x-0 bottom-0 z-50 flex max-h-[80dvh] flex-col overflow-hidden rounded-t-3xl border-t border-slate-800/80 bg-[#0f172a] shadow-3xl backdrop-blur-2xl pb-safe animate-sheet-up lg:inset-x-auto lg:bottom-6 lg:left-72 lg:max-h-[550px] lg:w-[22rem] lg:rounded-3xl lg:border lg:pb-0 lg:animate-in lg:slide-in-from-left-8 lg:fade-in lg:duration-300">
+      {/* Mobile drag handle */}
+      <div className="flex shrink-0 justify-center pt-3 pb-1 lg:hidden">
+        <div className="h-1.5 w-12 rounded-full bg-white/15" />
+      </div>
       <div className="p-5 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/40">
         <h3 className="font-black text-[13px] uppercase tracking-widest text-slate-400">Activity Log</h3>
         <button

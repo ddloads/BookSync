@@ -1,12 +1,21 @@
 import {
-  ArrowDown, ArrowUp, Check, ChevronDown, Filter, LayoutGrid, List, Search, SlidersHorizontal, X, CheckSquare, Square
+  ArrowDown, ArrowUp, Check, ChevronDown, LayoutGrid, List, Search, SlidersHorizontal, X, CheckSquare, Square
 } from 'lucide-react'
 import { SORT_OPTIONS } from '../types'
 import { useFilterStore } from '../stores/useFilterStore'
 import { useLibraryStore } from '../stores/useLibraryStore'
 import { useShallow } from 'zustand/react/shallow'
+import { useState } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 
-export function ControlsBar({ totalCount, currentCount, filteredBookIds }: { totalCount: number; currentCount: number; filteredBookIds: string[] }) {
+interface ControlsBarProps {
+  totalCount: number
+  currentCount: number
+  filteredBookIds: string[]
+  activeFilterCount: number
+}
+
+export function ControlsBar({ totalCount, currentCount, filteredBookIds, activeFilterCount }: ControlsBarProps) {
   const {
     viewMode, setViewMode,
     searchQuery, setSearchQuery,
@@ -16,8 +25,9 @@ export function ControlsBar({ totalCount, currentCount, filteredBookIds }: { tot
     secondarySortOrder, setSecondarySortOrder,
     showSortMenu, setShowSortMenu,
     showSecondarySortMenu, setShowSecondarySortMenu,
-    setShowFilterPanel
+    showFilterPanel, setShowFilterPanel,
   } = useFilterStore()
+  void totalCount
 
   const { selectedIds, selectAll, clearSelection } = useLibraryStore(
     useShallow(s => ({
@@ -27,12 +37,186 @@ export function ControlsBar({ totalCount, currentCount, filteredBookIds }: { tot
     }))
   )
 
+  const isMobile = useIsMobile()
+  const [mobileSortOpen, setMobileSortOpen] = useState(false)
+
   const allSelected = filteredBookIds.length > 0 && filteredBookIds.every(id => selectedIds.has(id))
   const someSelected = selectedIds.size > 0 && !allSelected
 
   const handleToggleSelectAll = () => {
     if (allSelected) clearSelection()
     else selectAll(filteredBookIds)
+  }
+
+  const sortLabel = SORT_OPTIONS.find(o => o.value === sortBy)?.label ?? 'Sort'
+
+  if (isMobile) {
+    return (
+      <div className="mb-5 space-y-3">
+        {/* Search */}
+        <div className="relative group">
+          <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-500 transition-colors group-focus-within:text-amber-500">
+            <Search size={18} />
+          </div>
+          <input
+            type="text"
+            placeholder={`Search ${currentCount} ${currentCount === 1 ? 'title' : 'titles'}...`}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-2xl border border-slate-800/50 bg-[#0f172a]/40 py-3.5 pl-12 pr-12 text-sm text-white placeholder-slate-600 shadow-inner transition-all focus:border-amber-500/50 focus:outline-none focus:ring-4 focus:ring-amber-500/5"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              aria-label="Clear search"
+              className="absolute inset-y-0 right-4 flex items-center text-slate-500 transition-colors hover:text-white"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
+
+        {/* Pill row */}
+        <div className="-mx-4 overflow-x-auto px-4 pb-1 custom-scrollbar">
+          <div className="flex min-w-max items-center gap-2">
+            <button
+              onClick={handleToggleSelectAll}
+              className={`flex h-10 shrink-0 items-center gap-2 rounded-2xl border px-3.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                allSelected
+                  ? 'border-amber-500 bg-amber-500 text-black shadow-lg shadow-amber-500/20'
+                  : someSelected
+                    ? 'border-amber-500/40 bg-amber-500/20 text-amber-400'
+                    : 'border-white/5 bg-white/5 text-slate-300'
+              }`}
+            >
+              {allSelected ? <CheckSquare size={14} /> : <Square size={14} />}
+              {allSelected ? 'All' : someSelected ? selectedIds.size : 'Select'}
+            </button>
+
+            <button
+              onClick={() => setShowFilterPanel(!showFilterPanel)}
+              className={`relative flex h-10 shrink-0 items-center gap-2 rounded-2xl border px-3.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                showFilterPanel
+                  ? 'border-amber-500 bg-amber-500 text-black shadow-lg shadow-amber-500/20'
+                  : 'border-slate-800/50 bg-[#0f172a]/40 text-slate-300'
+              }`}
+            >
+              <SlidersHorizontal size={14} />
+              Filters
+              {activeFilterCount > 0 && (
+                <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-black ${showFilterPanel ? 'bg-black text-amber-500' : 'bg-amber-500 text-black'}`}>
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setMobileSortOpen(true)}
+              className="flex h-10 shrink-0 items-center gap-2 rounded-2xl border border-slate-800/50 bg-[#0f172a]/40 px-3.5 text-[10px] font-black uppercase tracking-widest text-slate-300"
+            >
+              <span className="text-amber-500">{sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>
+              <span>{sortLabel}</span>
+              <ChevronDown size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile sort sheet */}
+        {mobileSortOpen && (
+          <div className="fixed inset-0 z-50 flex items-end">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-sheet-fade" onClick={() => setMobileSortOpen(false)} />
+            <div className="relative flex max-h-[85dvh] w-full flex-col overflow-hidden rounded-t-3xl border-t border-slate-800/60 bg-[#0f172a] pb-safe animate-sheet-up">
+              <div className="flex shrink-0 justify-center pt-3 pb-1">
+                <div className="h-1.5 w-12 rounded-full bg-white/15" />
+              </div>
+              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800/60">
+                <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-slate-300">Sort</h3>
+                <button
+                  onClick={() => setMobileSortOpen(false)}
+                  className="rounded-lg p-1.5 text-slate-500 hover:bg-white/5 hover:text-white"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto custom-scrollbar">
+                {/* Primary sort */}
+                <div className="px-5 pt-4 pb-1">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sort by</span>
+                    <button
+                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                      className="flex items-center gap-2 rounded-xl border border-slate-800/60 bg-[#0f172a] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-amber-400"
+                    >
+                      {sortOrder === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                      {sortOrder === 'asc' ? 'Asc' : 'Desc'}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setSortBy(option.value as any)}
+                        className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all ${
+                          sortBy === option.value
+                            ? 'border-amber-500 bg-amber-500 text-black'
+                            : 'border-slate-800/60 bg-[#0f172a]/40 text-slate-400'
+                        }`}
+                      >
+                        <span className="truncate">{option.label}</span>
+                        {sortBy === option.value && <Check size={14} className="shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Secondary sort */}
+                <div className="px-5 pt-5 pb-6">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Then by</span>
+                    <div className="flex items-center gap-2">
+                      {secondarySortBy && secondarySortBy !== 'none' && (
+                        <>
+                          <button
+                            onClick={() => setSecondarySortOrder(secondarySortOrder === 'asc' ? 'desc' : 'asc')}
+                            className="flex items-center gap-2 rounded-xl border border-slate-800/60 bg-[#0f172a] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-amber-400"
+                          >
+                            {secondarySortOrder === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+                            {secondarySortOrder === 'asc' ? 'Asc' : 'Desc'}
+                          </button>
+                          <button
+                            onClick={() => setSecondarySortBy('none')}
+                            className="rounded-xl px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-rose-400 hover:bg-rose-500/10"
+                          >
+                            Clear
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setSecondarySortBy(option.value as any)}
+                        className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all ${
+                          secondarySortBy === option.value
+                            ? 'border-amber-500 bg-amber-500 text-black'
+                            : 'border-slate-800/60 bg-[#0f172a]/40 text-slate-400'
+                        }`}
+                      >
+                        <span className="truncate">{option.label}</span>
+                        {secondarySortBy === option.value && <Check size={14} className="shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -43,8 +227,8 @@ export function ControlsBar({ totalCount, currentCount, filteredBookIds }: { tot
           <button
             onClick={handleToggleSelectAll}
             className={`flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all sm:w-auto ${
-              allSelected 
-                ? 'bg-amber-500 border-amber-500 text-black shadow-lg shadow-amber-500/20' 
+              allSelected
+                ? 'bg-amber-500 border-amber-500 text-black shadow-lg shadow-amber-500/20'
                 : someSelected
                   ? 'bg-amber-500/20 border-amber-500/40 text-amber-500'
                   : 'bg-white/5 border-white/5 text-slate-400 hover:text-white hover:bg-white/10'
