@@ -30,7 +30,7 @@ COPY --from=build /app/dist-web ./dist-web
 COPY --from=build /app/src/main/python ./src/main/python
 
 RUN python3 -m venv /app/src/main/python/venv && \
-    /app/src/main/python/venv/bin/pip install --no-cache-dir audible==0.8.2 audible-cli==0.3.2 httpx==0.27.0
+    /app/src/main/python/venv/bin/pip install --no-cache-dir audible==0.8.2 audible-cli==0.3.2 httpx==0.23.3
 
 ENV NODE_ENV=production
 ENV PORT=3000
