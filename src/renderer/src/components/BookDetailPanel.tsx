@@ -112,7 +112,7 @@ export function BookDetailPanel() {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-end lg:items-stretch">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-sheet-fade lg:animate-in lg:fade-in lg:duration-500" onClick={() => setSelectedBook(null)} />
-      <div className="relative flex h-full max-h-[92dvh] w-full flex-col rounded-t-3xl border-t border-slate-800/60 bg-[#0f172a] shadow-3xl animate-sheet-up pb-safe lg:h-full lg:max-h-none lg:rounded-none lg:border-l lg:border-t-0 lg:pb-0 lg:animate-in lg:slide-in-from-right lg:duration-500 lg:max-w-2xl">
+      <div className="relative flex h-full max-h-[92dvh] min-h-0 w-full flex-col overflow-hidden rounded-t-3xl border-t border-slate-800/60 bg-[#0f172a] shadow-3xl animate-sheet-up pb-safe lg:h-full lg:max-h-none lg:rounded-none lg:border-l lg:border-t-0 lg:pb-0 lg:animate-in lg:slide-in-from-right lg:duration-500 lg:max-w-2xl">
         {/* Mobile drag handle */}
         <div className="flex shrink-0 justify-center pt-3 pb-1 lg:hidden">
           <div className="h-1.5 w-12 rounded-full bg-white/15" />
@@ -126,7 +126,7 @@ export function BookDetailPanel() {
           <X size={20} />
         </button>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
           <div className="relative aspect-[16/10] sm:aspect-square md:aspect-[4/3] w-full overflow-hidden">
             {book.coverUrl ? (
               <img src={book.coverUrl} className="w-full h-full object-cover" />

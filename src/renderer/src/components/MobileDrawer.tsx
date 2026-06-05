@@ -64,7 +64,7 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-sheet-fade"
         onClick={onClose}
       />
-      <aside className="relative flex h-full w-[min(20rem,85vw)] flex-col border-r border-slate-800/60 bg-[#0f172a] shadow-2xl pt-safe pb-safe animate-drawer-in">
+      <aside className="relative flex h-full w-[min(20rem,85vw)] min-h-0 flex-col border-r border-slate-800/60 bg-[#0f172a] shadow-2xl pt-safe pb-safe animate-drawer-in">
         <div className="flex items-center gap-3 border-b border-slate-800/50 px-5 py-4">
           <div className="rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-2 shadow-lg shadow-amber-500/10">
             <BookOpen className="h-5 w-5 text-white" />
@@ -82,7 +82,7 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-1">
           <DrawerItem
             icon={<Library size={18} />}
             label="My Library"

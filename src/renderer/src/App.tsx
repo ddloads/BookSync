@@ -110,7 +110,7 @@ function App() {
       <MobileBottomNav />
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
-      <div className="flex-1 flex flex-col relative min-w-0">
+      <div className="flex-1 flex flex-col relative min-h-0 min-w-0">
         {showNotifications && (
           <>
             <div
@@ -123,7 +123,7 @@ function App() {
 
         <main
           ref={mainScrollRef}
-          className="flex-1 overflow-y-auto relative custom-scrollbar mobile-shell-top mobile-shell-bottom lg:!pt-0 lg:!pb-0"
+          className="flex-1 min-h-0 overflow-y-auto relative custom-scrollbar mobile-shell-top mobile-shell-bottom lg:!pt-0 lg:!pb-0"
         >
           {activeTab === 'library' && (
             <div className="px-4 pb-6 pt-4 md:p-8 lg:p-10">

@@ -21,7 +21,7 @@ export function NotificationCenter() {
           <Trash2 size={16} />
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-30 grayscale">
             <Bell size={40} className="mb-4" />
